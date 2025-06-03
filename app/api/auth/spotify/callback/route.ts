@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
       throw new Error("Missing Spotify credentials")
     }
 
-    // Use the exact same redirect URI as in the auth route
-    const redirectUri = "https://groovi.vercel.app/api/auth/spotify/callback"
+    // Update the redirectUri to match the one used in the auth route
+    const redirectUri = "https://groovi.vercel.app/auth/callback"
 
     console.log("Exchanging code for tokens with redirect URI:", redirectUri)
 
