@@ -14,7 +14,6 @@ import {
   Music,
   Calendar,
   MapPin,
-  Sparkles,
   Loader2,
   ArrowRight,
   Users,
@@ -43,8 +42,8 @@ interface LocationData {
 export default function DashboardPage() {
   const { toast } = useToast()
   const [location, setLocation] = useState<LocationData | null>(null)
-  const [allEvents, setAllEvents] = useState<any[]>([]) // Store all events
-  const [filteredEvents, setFilteredEvents] = useState<any[]>([]) // Store filtered events
+  const [allEvents, setAllEvents] = useState<any[]>([])
+  const [filteredEvents, setFilteredEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [eventsLoading, setEventsLoading] = useState(false)
   const [apiStatus, setApiStatus] = useState<any>(null)
@@ -60,10 +59,10 @@ export default function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const eventsPerPage = 10
 
-  // Filter state - updated for multi-select
+  // Filter state
   const [filters, setFilters] = useState({
-    venues: [] as string[], // Changed to array
-    genres: [] as string[], // Changed to array
+    venues: [] as string[],
+    genres: [] as string[],
     dateFrom: "",
     dateTo: "",
     searchText: "",
@@ -96,17 +95,14 @@ export default function DashboardPage() {
   useEffect(() => {
     let filtered = [...allEvents]
 
-    // Apply venue filter (multi-select)
     if (filters.venues.length > 0) {
       filtered = filtered.filter((event) => filters.venues.includes(event.venueName))
     }
 
-    // Apply genre filter (multi-select)
     if (filters.genres.length > 0) {
       filtered = filtered.filter((event) => filters.genres.includes(event.genre))
     }
 
-    // Apply date range filter
     if (filters.dateFrom) {
       const fromDate = new Date(filters.dateFrom)
       filtered = filtered.filter((event) => new Date(event.date) >= fromDate)
@@ -114,11 +110,10 @@ export default function DashboardPage() {
 
     if (filters.dateTo) {
       const toDate = new Date(filters.dateTo)
-      toDate.setHours(23, 59, 59, 999) // Include the entire day
+      toDate.setHours(23, 59, 59, 999)
       filtered = filtered.filter((event) => new Date(event.date) <= toDate)
     }
 
-    // Apply text search filter
     if (filters.searchText) {
       const searchLower = filters.searchText.toLowerCase()
       filtered = filtered.filter(
@@ -131,7 +126,7 @@ export default function DashboardPage() {
     }
 
     setFilteredEvents(filtered)
-    setCurrentPage(1) // Reset to first page when filters change
+    setCurrentPage(1)
   }, [filters, allEvents])
 
   // Clear all filters
@@ -192,18 +187,17 @@ export default function DashboardPage() {
       }
     }
 
-    // Check API status
     checkApiStatus()
   }, [])
 
-  // Auto-search effect - runs after location and API status are loaded
+  // Auto-search effect
   useEffect(() => {
     const shouldAutoSearch = location && apiStatus?.success && !hasAutoSearched && !statusLoading
 
     if (shouldAutoSearch) {
       console.log("🔍 Auto-searching for events on dashboard load...")
       setHasAutoSearched(true)
-      searchEvents(true) // Pass true to indicate this is an auto-search
+      searchEvents(true)
     }
   }, [location, apiStatus, hasAutoSearched, statusLoading])
 
@@ -224,7 +218,6 @@ export default function DashboardPage() {
     }
   }
 
-  // Updated searchEvents function with auto-search parameter
   const searchEvents = async (isAutoSearch = false) => {
     if (!location) {
       if (!isAutoSearch) {
@@ -250,17 +243,15 @@ export default function DashboardPage() {
 
     setEventsLoading(true)
     setError("")
-    setAllEvents([]) // Clear previous results
-    setFilteredEvents([]) // Clear filtered results
-    setCurrentPage(1) // Reset to first page
+    setAllEvents([])
+    setFilteredEvents([])
+    setCurrentPage(1)
 
     try {
-      // Format location data exactly like the Quick Test
       const city = location.city?.trim() || ""
-      // Convert state to 2-letter code if it's not already
       let stateCode = location.state?.trim() || ""
+
       if (stateCode.length > 2) {
-        // This is a full state name, try to convert to code
         const stateMap: Record<string, string> = {
           alabama: "AL",
           alaska: "AK",
@@ -319,22 +310,16 @@ export default function DashboardPage() {
         }
       }
 
-      // Validate inputs - exact same as test page
       if (!city && !stateCode) {
         setError("Please enter at least a city or state")
         setEventsLoading(false)
         return
       }
 
-      // Build URL exactly like the Quick Test
       const url = `/api/ticketmaster/events?city=${encodeURIComponent(city)}&stateCode=${encodeURIComponent(stateCode)}&musicOnly=true&size=${searchParams.size}&radius=${searchParams.radius}&daysAhead=${searchParams.daysAhead}`
-
-      console.log("🔍 Search URL:", url)
 
       const response = await fetch(url)
       const data = await response.json()
-
-      console.log("📊 API Response:", data)
 
       if (data.success) {
         setAllEvents(data.events)
@@ -344,10 +329,7 @@ export default function DashboardPage() {
           totalEvents: data.events.length,
         }))
 
-        console.log(`✅ Found ${data.events.length} events`)
-
         if (data.events.length > 0) {
-          // Only show toast for manual searches, not auto-searches
           if (!isAutoSearch) {
             toast({
               title: "Events found!",
@@ -355,7 +337,6 @@ export default function DashboardPage() {
             })
           }
         } else {
-          // Only show toast for manual searches
           if (!isAutoSearch) {
             toast({
               title: "No events found",
@@ -366,8 +347,6 @@ export default function DashboardPage() {
         }
       } else {
         setError(data.error || "Failed to search events")
-        console.error("Search Error Details:", data.debug)
-        // Only show toast for manual searches
         if (!isAutoSearch) {
           toast({
             title: "Search failed",
@@ -378,8 +357,6 @@ export default function DashboardPage() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed")
-      console.error("Search error:", err)
-      // Only show toast for manual searches
       if (!isAutoSearch) {
         toast({
           title: "Connection error",
@@ -401,14 +378,13 @@ export default function DashboardPage() {
       description: `Set to ${newLocation.city}, ${newLocation.state}`,
     })
 
-    // Clear previous events when location changes and reset auto-search flag
     setAllEvents([])
     setFilteredEvents([])
     setCurrentPage(1)
     setTotalEvents(0)
     setError("")
-    setHasAutoSearched(false) // Allow auto-search to run again with new location
-    clearFilters() // Clear filters when location changes
+    setHasAutoSearched(false)
+    clearFilters()
   }
 
   const generateWeeklyPlaylist = async () => {
@@ -421,7 +397,6 @@ export default function DashboardPage() {
       return
     }
 
-    // Use filteredEvents instead of allEvents
     if (filteredEvents.length === 0) {
       toast({
         title: "No events found",
@@ -435,14 +410,11 @@ export default function DashboardPage() {
 
     setLoading(true)
     try {
-      // Extract artist names from filtered events (respects user's filters/search)
       const artists = filteredEvents.map((event) => event.artistName).filter(Boolean)
 
       if (artists.length === 0) {
         throw new Error("No artists found in filtered events")
       }
-
-      console.log("🎵 Creating playlist for filtered artists:", artists)
 
       const response = await fetch("/api/spotify/create-playlist", {
         method: "POST",
@@ -463,17 +435,15 @@ export default function DashboardPage() {
         const playlist = {
           ...data.playlist,
           generatedAt: new Date().toISOString(),
-          events: filteredEvents, // Use filtered events
+          events: filteredEvents,
           location: location,
           wasFiltered: hasActiveFilters,
           totalEventsBeforeFilter: allEvents.length,
         }
 
-        // Save current playlist
         localStorage.setItem("groovi-current-playlist", JSON.stringify(playlist))
         setCurrentPlaylist(playlist)
 
-        // Add to history
         const history = JSON.parse(localStorage.getItem("groovi-playlist-history") || "[]")
         history.unshift({
           ...playlist,
@@ -481,7 +451,6 @@ export default function DashboardPage() {
         })
         localStorage.setItem("groovi-playlist-history", JSON.stringify(history.slice(0, 10)))
 
-        // Update stats
         setStats((prev) => ({ ...prev, playlistsCreated: history.length }))
 
         toast({
@@ -506,7 +475,6 @@ export default function DashboardPage() {
   // Pagination handlers
   const goToPage = (page: number) => {
     setCurrentPage(page)
-    // Scroll to top of events section
     document.getElementById("events-section")?.scrollIntoView({ behavior: "smooth" })
   }
 
@@ -523,8 +491,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl space-y-8">
-      {/* Hero Section - Compact and Clean */}
+    <div className="w-full max-w-4xl mx-auto px-4 py-6 space-y-6">
+      {/* Hero Section */}
       <div className="text-center space-y-4 py-6">
         <div className="flex items-center justify-center space-x-3">
           <div className="p-3 bg-green-500 rounded-xl shadow-lg">
@@ -577,628 +545,582 @@ export default function DashboardPage() {
         </Alert>
       )}
 
-      {/* Main Content - Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Left Column - Main Events (3/4 width) */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Stats Cards Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="border-slate-200 bg-white shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Calendar className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-xl font-bold text-slate-900">{stats.totalEvents}</p>
-                    <p className="text-xs text-slate-600">Upcoming Events</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 bg-white shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <MapPin className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-xl font-bold text-slate-900">{uniqueVenues.length}</p>
-                    <p className="text-xs text-slate-600">Local Venues</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 bg-white shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Music className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-xl font-bold text-slate-900">{stats.playlistsCreated}</p>
-                    <p className="text-xs text-slate-600">Playlists Created</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Upcoming Shows - Main Section */}
-          <Card className="border-slate-200 bg-white shadow-lg" id="events-section">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl text-slate-900 flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Calendar className="h-5 w-5 text-blue-600" />
-                    </div>
-                    Upcoming Shows
-                    {location && <span className="text-lg text-slate-600">in {location.city}</span>}
-                  </CardTitle>
-                  <CardDescription className="text-slate-600 mt-1">
-                    {location
-                      ? "Live music events happening near you"
-                      : "Set your location below to search for local events"}
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  {location && apiStatus?.success && (
-                    <>
-                      <Button
-                        onClick={() => setShowFilters(!showFilters)}
-                        variant="outline"
-                        size="sm"
-                        className="border-slate-200 hover:bg-slate-50"
-                      >
-                        <Filter className="h-4 w-4 mr-1" />
-                        Filters
-                        {hasActiveFilters && (
-                          <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 text-xs">
-                            {filters.venues.length +
-                              filters.genres.length +
-                              (filters.dateFrom ? 1 : 0) +
-                              (filters.dateTo ? 1 : 0) +
-                              (filters.searchText ? 1 : 0)}
-                          </Badge>
-                        )}
-                      </Button>
-                      <Button
-                        onClick={() => setShowSearchSettings(!showSearchSettings)}
-                        variant="outline"
-                        size="sm"
-                        className="border-slate-200 hover:bg-slate-50"
-                      >
-                        <Settings className="h-4 w-4 mr-1" />
-                        Settings
-                      </Button>
-                      <Button
-                        onClick={() => searchEvents(false)}
-                        disabled={eventsLoading}
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        {eventsLoading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                            Searching...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw className="h-4 w-4 mr-1" />
-                            Refresh
-                          </>
-                        )}
-                      </Button>
-                    </>
-                  )}
-                  {filteredEvents.length > 0 && (
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
-                      {filteredEvents.length} events
-                      {hasActiveFilters && ` (filtered from ${allEvents.length})`}
-                      {totalPages > 1 && ` • Page ${currentPage}/${totalPages}`}
-                    </Badge>
-                  )}
-                </div>
+      {/* Stats Cards Row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Calendar className="h-5 w-5 text-blue-600" />
               </div>
-
-              {/* Filters Panel - Compact */}
-              {showFilters && location && allEvents.length > 0 && (
-                <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-slate-900">Filter Events</h4>
-                    {hasActiveFilters && (
-                      <Button
-                        onClick={clearFilters}
-                        variant="outline"
-                        size="sm"
-                        className="border-slate-200 hover:bg-slate-50"
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Clear All
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Text Search */}
-                    <div>
-                      <Label htmlFor="search-text" className="text-slate-700 text-sm">
-                        Search
-                      </Label>
-                      <Input
-                        id="search-text"
-                        value={filters.searchText}
-                        onChange={(e) => setFilters((prev) => ({ ...prev, searchText: e.target.value }))}
-                        placeholder="Artist, venue, city..."
-                        className="bg-white border-slate-200 text-slate-900 h-9"
-                      />
-                    </div>
-
-                    {/* Venue Filter */}
-                    <div>
-                      <Label className="text-slate-700 text-sm">Venues ({filters.venues.length})</Label>
-                      <div className="mt-1 max-h-24 overflow-y-auto bg-white border border-slate-200 rounded-md p-2">
-                        {uniqueVenues.slice(0, 5).map((venue) => (
-                          <div key={venue} className="flex items-center space-x-2 py-1">
-                            <Checkbox
-                              id={`venue-${venue}`}
-                              checked={filters.venues.includes(venue)}
-                              onCheckedChange={() => handleVenueToggle(venue)}
-                            />
-                            <Label htmlFor={`venue-${venue}`} className="text-slate-900 cursor-pointer text-xs">
-                              {venue.length > 20 ? venue.substring(0, 20) + "..." : venue}
-                            </Label>
-                          </div>
-                        ))}
-                        {uniqueVenues.length > 5 && (
-                          <p className="text-xs text-slate-500 mt-1">+{uniqueVenues.length - 5} more venues</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Genre Filter */}
-                    <div>
-                      <Label className="text-slate-700 text-sm">Genres ({filters.genres.length})</Label>
-                      <div className="mt-1 max-h-24 overflow-y-auto bg-white border border-slate-200 rounded-md p-2">
-                        {uniqueGenres.slice(0, 5).map((genre) => (
-                          <div key={genre} className="flex items-center space-x-2 py-1">
-                            <Checkbox
-                              id={`genre-${genre}`}
-                              checked={filters.genres.includes(genre)}
-                              onCheckedChange={() => handleGenreToggle(genre)}
-                            />
-                            <Label htmlFor={`genre-${genre}`} className="text-slate-900 cursor-pointer text-xs">
-                              {genre}
-                            </Label>
-                          </div>
-                        ))}
-                        {uniqueGenres.length > 5 && (
-                          <p className="text-xs text-slate-500 mt-1">+{uniqueGenres.length - 5} more genres</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Date Range */}
-                    <div>
-                      <Label className="text-slate-700 text-sm">Date Range</Label>
-                      <div className="space-y-1">
-                        <Input
-                          type="date"
-                          value={filters.dateFrom}
-                          onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
-                          className="bg-white border-slate-200 text-slate-900 h-9 text-xs"
-                        />
-                        <Input
-                          type="date"
-                          value={filters.dateTo}
-                          onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
-                          className="bg-white border-slate-200 text-slate-900 h-9 text-xs"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {hasActiveFilters && (
-                    <div className="mt-3 text-xs text-slate-600">
-                      Showing {filteredEvents.length} of {allEvents.length} events
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Search Settings Panel */}
-              {showSearchSettings && location && (
-                <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                  <h4 className="font-medium text-slate-900 mb-3">Search Parameters</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="radius" className="text-slate-700 text-sm">
-                        Radius (miles)
-                      </Label>
-                      <Input
-                        id="radius"
-                        value={searchParams.radius}
-                        onChange={(e) => setSearchParams((prev) => ({ ...prev, radius: e.target.value }))}
-                        placeholder="25"
-                        className="bg-white border-slate-200 text-slate-900 h-9"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="days" className="text-slate-700 text-sm">
-                        Days Ahead
-                      </Label>
-                      <Input
-                        id="days"
-                        value={searchParams.daysAhead}
-                        onChange={(e) => setSearchParams((prev) => ({ ...prev, daysAhead: e.target.value }))}
-                        placeholder="7"
-                        className="bg-white border-slate-200 text-slate-900 h-9"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="size" className="text-slate-700 text-sm">
-                        Max Results
-                      </Label>
-                      <Input
-                        id="size"
-                        value={searchParams.size}
-                        onChange={(e) => setSearchParams((prev) => ({ ...prev, size: e.target.value }))}
-                        placeholder="100"
-                        className="bg-white border-slate-200 text-slate-900 h-9"
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <Button
-                      onClick={() => searchEvents(false)}
-                      disabled={eventsLoading}
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {eventsLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Searching...
-                        </>
-                      ) : (
-                        <>
-                          <Search className="h-4 w-4 mr-2" />
-                          Search with New Parameters
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardHeader>
-            <CardContent>
-              {!location ? (
-                <div className="text-center py-8">
-                  <MapPin className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">Location Required</h3>
-                  <p className="text-slate-600 mb-4">
-                    Please set your location below to automatically search for upcoming shows in your area.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="border-slate-200 hover:bg-slate-50"
-                    onClick={() => {
-                      document.getElementById("location-settings")?.scrollIntoView({ behavior: "smooth" })
-                    }}
-                  >
-                    Set Location Below
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-              ) : !apiStatus?.success ? (
-                <div className="text-center py-8">
-                  <XCircle className="h-12 w-12 text-red-300 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">API Not Available</h3>
-                  <p className="text-slate-600 mb-4">
-                    Ticketmaster API is not properly configured. Please check the configuration.
-                  </p>
-                  <div className="flex gap-3 justify-center">
-                    <Button onClick={checkApiStatus} variant="outline" className="border-slate-200 hover:bg-slate-50">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Retry Connection
-                    </Button>
-                    <Button variant="outline" className="border-slate-200 hover:bg-slate-50" asChild>
-                      <a href="/test-ticketmaster">
-                        Test API Page
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              ) : eventsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-slate-400 mr-3" />
-                  <span className="text-slate-600">Searching for events in {location?.city || "your area"}...</span>
-                </div>
-              ) : filteredEvents.length === 0 ? (
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    {hasActiveFilters ? "No Events Match Filters" : "No Events Found"}
-                  </h3>
-                  <p className="text-slate-600 mb-4">
-                    {hasActiveFilters ? (
-                      <>
-                        No events match your current filters. Try adjusting or clearing your filters.
-                        <br />
-                        Found {allEvents.length} total events before filtering.
-                      </>
-                    ) : (
-                      <>
-                        No upcoming shows found in {location?.city} for the next {searchParams.daysAhead} days.
-                        <br />
-                        Try adjusting the search radius or time range in settings.
-                      </>
-                    )}
-                  </p>
-                  <div className="flex gap-3 justify-center">
-                    {hasActiveFilters ? (
-                      <Button onClick={clearFilters} className="bg-blue-600 hover:bg-blue-700 text-white">
-                        <X className="h-4 w-4 mr-2" />
-                        Clear Filters
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          onClick={() => setShowSearchSettings(true)}
-                          variant="outline"
-                          className="border-slate-200 hover:bg-slate-50"
-                        >
-                          <Settings className="h-4 w-4 mr-2" />
-                          Adjust Search Settings
-                        </Button>
-                        <Button
-                          onClick={() => searchEvents(false)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Try Again
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {/* Events List - Compact */}
-                  {currentEvents.map((event, index) => (
-                    <div
-                      key={`${event.id}-${index}`}
-                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all duration-200 border border-slate-100"
-                    >
-                      <div className="flex items-center gap-3">
-                        {event.imageUrl ? (
-                          <img
-                            src={event.imageUrl || "/placeholder.svg"}
-                            alt={event.artistName}
-                            className="w-12 h-12 rounded-lg object-cover shadow-sm"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
-                            {event.artistName.charAt(0)}
-                          </div>
-                        )}
-                        <div>
-                          <h4 className="font-semibold text-slate-900">{event.artistName}</h4>
-                          <div className="flex items-center gap-2 text-slate-600 text-sm">
-                            <MapPin className="h-3 w-3" />
-                            <span className="font-medium">{event.venueName}</span>
-                            {event.city && event.state && (
-                              <span className="text-slate-500">
-                                • {event.city}, {event.state}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 text-slate-600 text-sm">
-                            <Calendar className="h-3 w-3" />
-                            <span>{new Date(event.date).toLocaleDateString()}</span>
-                            {event.time && <span className="text-slate-500">at {event.time}</span>}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right space-y-2">
-                        <div className="flex gap-2 justify-end">
-                          {event.genre && (
-                            <Badge variant="outline" className="bg-white border-slate-200 text-slate-700 text-xs">
-                              {event.genre}
-                            </Badge>
-                          )}
-                          {event.price && (
-                            <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
-                              {event.price}
-                            </Badge>
-                          )}
-                        </div>
-                        {event.ticketUrl && (
-                          <Button
-                            size="sm"
-                            onClick={() => window.open(event.ticketUrl, "_blank")}
-                            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                          >
-                            <Ticket className="h-3 w-3 mr-1" />
-                            Buy Tickets
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Pagination Controls */}
-                  {totalPages > 1 && (
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                      <div className="text-sm text-slate-600">
-                        Showing {startIndex + 1}-{Math.min(endIndex, filteredEvents.length)} of {filteredEvents.length}{" "}
-                        events
-                        {hasActiveFilters && ` (filtered from ${allEvents.length} total)`}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={goToPreviousPage}
-                          disabled={currentPage === 1}
-                          className="border-slate-200 hover:bg-slate-50"
-                        >
-                          <ChevronLeft className="h-4 w-4 mr-1" />
-                          Previous
-                        </Button>
-
-                        {/* Page Numbers */}
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-                            let pageNum
-                            if (totalPages <= 3) {
-                              pageNum = i + 1
-                            } else if (currentPage <= 2) {
-                              pageNum = i + 1
-                            } else if (currentPage >= totalPages - 1) {
-                              pageNum = totalPages - 2 + i
-                            } else {
-                              pageNum = currentPage - 1 + i
-                            }
-
-                            return (
-                              <Button
-                                key={pageNum}
-                                variant={currentPage === pageNum ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => goToPage(pageNum)}
-                                className={
-                                  currentPage === pageNum
-                                    ? "bg-blue-600 text-white"
-                                    : "border-slate-200 hover:bg-slate-50"
-                                }
-                              >
-                                {pageNum}
-                              </Button>
-                            )
-                          })}
-                        </div>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={goToNextPage}
-                          disabled={currentPage === totalPages}
-                          className="border-slate-200 hover:bg-slate-50"
-                        >
-                          Next
-                          <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column - Actions Sidebar (1/4 width) */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Weekly Playlist Generation */}
-          {location && allEvents.length > 0 && (
-            <Card className="border-slate-200 bg-white shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-slate-900 text-lg">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Sparkles className="h-4 w-4 text-green-600" />
-                  </div>
-                  Generate Playlist
-                </CardTitle>
-                <CardDescription className="text-slate-600 text-sm">
-                  Create a Spotify playlist from artists playing in {location.city}.
-                  {hasActiveFilters
-                    ? ` Uses ${filteredEvents.length} filtered events.`
-                    : ` Uses all ${allEvents.length} events.`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  <div className="text-xs text-slate-600 bg-slate-50 p-2 rounded">
-                    Featured:{" "}
-                    {filteredEvents
-                      .slice(0, 2)
-                      .map((e) => e.artistName)
-                      .join(", ")}
-                    {filteredEvents.length > 2 && ` +${filteredEvents.length - 2} more`}
-                    {hasActiveFilters && (
-                      <span className="block mt-1 text-blue-600 font-medium">
-                        ✓ Using filtered results ({filteredEvents.length}/{allEvents.length})
-                      </span>
-                    )}
-                  </div>
-
-                  <Button
-                    onClick={generateWeeklyPlaylist}
-                    disabled={loading}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4 mr-2" />
-                        Generate Playlist
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Quick Navigation */}
-          <Card className="border-slate-200 bg-white shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-slate-900 text-lg">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="h-4 w-4 text-blue-600" />
-                </div>
-                Explore Your Scene
-              </CardTitle>
-              <CardDescription className="text-slate-600 text-sm">
-                Discover what's happening in {location?.city || "your area"}'s music scene
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-between hover:bg-slate-50 border-slate-200" asChild>
-                  <a href="/dashboard/venues">
-                    Explore Local Venues
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </Button>
-                <Button variant="outline" className="w-full justify-between hover:bg-slate-50 border-slate-200" asChild>
-                  <a href="/dashboard/create-playlist">
-                    Create Custom Playlist
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </Button>
-                <Button variant="outline" className="w-full justify-between hover:bg-slate-50 border-slate-200" asChild>
-                  <a href="/test-ticketmaster">
-                    Test API Connection
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </Button>
+              <div className="ml-3">
+                <p className="text-xl font-bold text-slate-900">{stats.totalEvents}</p>
+                <p className="text-xs text-slate-600">Upcoming Events</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <MapPin className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xl font-bold text-slate-900">{uniqueVenues.length}</p>
+                <p className="text-xs text-slate-600">Local Venues</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Music className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="ml-3">
+                <p className="text-xl font-bold text-slate-900">{stats.playlistsCreated}</p>
+                <p className="text-xs text-slate-600">Playlists Created</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-center">
+              <Button
+                onClick={generateWeeklyPlaylist}
+                disabled={loading || filteredEvents.length === 0}
+                className="w-full bg-green-500 hover:bg-green-600 text-white"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Generate Playlist
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Location Settings - Bottom Section */}
+      {/* Upcoming Shows - Main Section */}
+      <Card className="border-slate-200 bg-white shadow-lg" id="events-section">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl text-slate-900 flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                </div>
+                Upcoming Shows
+                {location && <span className="text-lg text-slate-600">in {location.city}</span>}
+              </CardTitle>
+              <CardDescription className="text-slate-600 mt-1">
+                {location
+                  ? "Live music events happening near you"
+                  : "Set your location below to search for local events"}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              {location && apiStatus?.success && (
+                <>
+                  <Button
+                    onClick={() => setShowFilters(!showFilters)}
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-200 hover:bg-slate-50"
+                  >
+                    <Filter className="h-4 w-4 mr-1" />
+                    Filters
+                    {hasActiveFilters && (
+                      <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 text-xs">
+                        {filters.venues.length +
+                          filters.genres.length +
+                          (filters.dateFrom ? 1 : 0) +
+                          (filters.dateTo ? 1 : 0) +
+                          (filters.searchText ? 1 : 0)}
+                      </Badge>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => setShowSearchSettings(!showSearchSettings)}
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-200 hover:bg-slate-50"
+                  >
+                    <Settings className="h-4 w-4 mr-1" />
+                    Settings
+                  </Button>
+                  <Button
+                    onClick={() => searchEvents(false)}
+                    disabled={eventsLoading}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {eventsLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-1" />
+                        Refresh
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
+              {filteredEvents.length > 0 && (
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
+                  {filteredEvents.length} events
+                  {hasActiveFilters && ` (filtered from ${allEvents.length})`}
+                  {totalPages > 1 && ` • Page ${currentPage}/${totalPages}`}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Filters Panel */}
+          {showFilters && location && allEvents.length > 0 && (
+            <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-slate-900">Filter Events</h4>
+                {hasActiveFilters && (
+                  <Button
+                    onClick={clearFilters}
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-200 hover:bg-slate-50"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear All
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Text Search */}
+                <div>
+                  <Label htmlFor="search-text" className="text-slate-700 text-sm">
+                    Search
+                  </Label>
+                  <Input
+                    id="search-text"
+                    value={filters.searchText}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, searchText: e.target.value }))}
+                    placeholder="Artist, venue, city..."
+                    className="bg-white border-slate-200 text-slate-900 h-9"
+                  />
+                </div>
+
+                {/* Venue Filter */}
+                <div>
+                  <Label className="text-slate-700 text-sm">Venues ({filters.venues.length})</Label>
+                  <div className="mt-1 max-h-24 overflow-y-auto bg-white border border-slate-200 rounded-md p-2">
+                    {uniqueVenues.slice(0, 5).map((venue) => (
+                      <div key={venue} className="flex items-center space-x-2 py-1">
+                        <Checkbox
+                          id={`venue-${venue}`}
+                          checked={filters.venues.includes(venue)}
+                          onCheckedChange={() => handleVenueToggle(venue)}
+                        />
+                        <Label htmlFor={`venue-${venue}`} className="text-slate-900 cursor-pointer text-xs">
+                          {venue.length > 20 ? venue.substring(0, 20) + "..." : venue}
+                        </Label>
+                      </div>
+                    ))}
+                    {uniqueVenues.length > 5 && (
+                      <p className="text-xs text-slate-500 mt-1">+{uniqueVenues.length - 5} more venues</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Genre Filter */}
+                <div>
+                  <Label className="text-slate-700 text-sm">Genres ({filters.genres.length})</Label>
+                  <div className="mt-1 max-h-24 overflow-y-auto bg-white border border-slate-200 rounded-md p-2">
+                    {uniqueGenres.slice(0, 5).map((genre) => (
+                      <div key={genre} className="flex items-center space-x-2 py-1">
+                        <Checkbox
+                          id={`genre-${genre}`}
+                          checked={filters.genres.includes(genre)}
+                          onCheckedChange={() => handleGenreToggle(genre)}
+                        />
+                        <Label htmlFor={`genre-${genre}`} className="text-slate-900 cursor-pointer text-xs">
+                          {genre}
+                        </Label>
+                      </div>
+                    ))}
+                    {uniqueGenres.length > 5 && (
+                      <p className="text-xs text-slate-500 mt-1">+{uniqueGenres.length - 5} more genres</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Date Range */}
+                <div>
+                  <Label className="text-slate-700 text-sm">Date Range</Label>
+                  <div className="space-y-1">
+                    <Input
+                      type="date"
+                      value={filters.dateFrom}
+                      onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
+                      className="bg-white border-slate-200 text-slate-900 h-9 text-xs"
+                    />
+                    <Input
+                      type="date"
+                      value={filters.dateTo}
+                      onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
+                      className="bg-white border-slate-200 text-slate-900 h-9 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {hasActiveFilters && (
+                <div className="mt-3 text-xs text-slate-600">
+                  Showing {filteredEvents.length} of {allEvents.length} events
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Search Settings Panel */}
+          {showSearchSettings && location && (
+            <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <h4 className="font-medium text-slate-900 mb-3">Search Parameters</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="radius" className="text-slate-700 text-sm">
+                    Radius (miles)
+                  </Label>
+                  <Input
+                    id="radius"
+                    value={searchParams.radius}
+                    onChange={(e) => setSearchParams((prev) => ({ ...prev, radius: e.target.value }))}
+                    placeholder="25"
+                    className="bg-white border-slate-200 text-slate-900 h-9"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="days" className="text-slate-700 text-sm">
+                    Days Ahead
+                  </Label>
+                  <Input
+                    id="days"
+                    value={searchParams.daysAhead}
+                    onChange={(e) => setSearchParams((prev) => ({ ...prev, daysAhead: e.target.value }))}
+                    placeholder="7"
+                    className="bg-white border-slate-200 text-slate-900 h-9"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="size" className="text-slate-700 text-sm">
+                    Max Results
+                  </Label>
+                  <Input
+                    id="size"
+                    value={searchParams.size}
+                    onChange={(e) => setSearchParams((prev) => ({ ...prev, size: e.target.value }))}
+                    placeholder="100"
+                    className="bg-white border-slate-200 text-slate-900 h-9"
+                  />
+                </div>
+              </div>
+              <div className="mt-3">
+                <Button
+                  onClick={() => searchEvents(false)}
+                  disabled={eventsLoading}
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {eventsLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4 mr-2" />
+                      Search with New Parameters
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardHeader>
+        <CardContent>
+          {!location ? (
+            <div className="text-center py-8">
+              <MapPin className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Location Required</h3>
+              <p className="text-slate-600 mb-4">
+                Please set your location below to automatically search for upcoming shows in your area.
+              </p>
+              <Button
+                variant="outline"
+                className="border-slate-200 hover:bg-slate-50"
+                onClick={() => {
+                  document.getElementById("location-settings")?.scrollIntoView({ behavior: "smooth" })
+                }}
+              >
+                Set Location Below
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          ) : !apiStatus?.success ? (
+            <div className="text-center py-8">
+              <XCircle className="h-12 w-12 text-red-300 mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">API Not Available</h3>
+              <p className="text-slate-600 mb-4">
+                Ticketmaster API is not properly configured. Please check the configuration.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={checkApiStatus} variant="outline" className="border-slate-200 hover:bg-slate-50">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry Connection
+                </Button>
+                <Button variant="outline" className="border-slate-200 hover:bg-slate-50" asChild>
+                  <a href="/test-ticketmaster">
+                    Test API Page
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </a>
+                </Button>
+              </div>
+            </div>
+          ) : eventsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-slate-400 mr-3" />
+              <span className="text-slate-600">Searching for events in {location?.city || "your area"}...</span>
+            </div>
+          ) : filteredEvents.length === 0 ? (
+            <div className="text-center py-8">
+              <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                {hasActiveFilters ? "No Events Match Filters" : "No Events Found"}
+              </h3>
+              <p className="text-slate-600 mb-4">
+                {hasActiveFilters ? (
+                  <>
+                    No events match your current filters. Try adjusting or clearing your filters.
+                    <br />
+                    Found {allEvents.length} total events before filtering.
+                  </>
+                ) : (
+                  <>
+                    No upcoming shows found in {location?.city} for the next {searchParams.daysAhead} days.
+                    <br />
+                    Try adjusting the search radius or time range in settings.
+                  </>
+                )}
+              </p>
+              <div className="flex gap-3 justify-center">
+                {hasActiveFilters ? (
+                  <Button onClick={clearFilters} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <X className="h-4 w-4 mr-2" />
+                    Clear Filters
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => setShowSearchSettings(true)}
+                      variant="outline"
+                      className="border-slate-200 hover:bg-slate-50"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Adjust Search Settings
+                    </Button>
+                    <Button onClick={() => searchEvents(false)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Try Again
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Events List */}
+              {currentEvents.map((event, index) => (
+                <div
+                  key={`${event.id}-${index}`}
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-all duration-200 border border-slate-100"
+                >
+                  <div className="flex items-center gap-3">
+                    {event.imageUrl ? (
+                      <img
+                        src={event.imageUrl || "/placeholder.svg"}
+                        alt={event.artistName}
+                        className="w-12 h-12 rounded-lg object-cover shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
+                        {event.artistName.charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="font-semibold text-slate-900">{event.artistName}</h4>
+                      <div className="flex items-center gap-2 text-slate-600 text-sm">
+                        <MapPin className="h-3 w-3" />
+                        <span className="font-medium">{event.venueName}</span>
+                        {event.city && event.state && (
+                          <span className="text-slate-500">
+                            • {event.city}, {event.state}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-600 text-sm">
+                        <Calendar className="h-3 w-3" />
+                        <span>{new Date(event.date).toLocaleDateString()}</span>
+                        {event.time && <span className="text-slate-500">at {event.time}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right space-y-2">
+                    <div className="flex gap-2 justify-end">
+                      {event.genre && (
+                        <Badge variant="outline" className="bg-white border-slate-200 text-slate-700 text-xs">
+                          {event.genre}
+                        </Badge>
+                      )}
+                      {event.price && (
+                        <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                          {event.price}
+                        </Badge>
+                      )}
+                    </div>
+                    {event.ticketUrl && (
+                      <Button
+                        size="sm"
+                        onClick={() => window.open(event.ticketUrl, "_blank")}
+                        className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                      >
+                        <Ticket className="h-3 w-3 mr-1" />
+                        Buy Tickets
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                  <div className="text-sm text-slate-600">
+                    Showing {startIndex + 1}-{Math.min(endIndex, filteredEvents.length)} of {filteredEvents.length}{" "}
+                    events
+                    {hasActiveFilters && ` (filtered from ${allEvents.length} total)`}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 1}
+                      className="border-slate-200 hover:bg-slate-50"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+                        let pageNum
+                        if (totalPages <= 3) {
+                          pageNum = i + 1
+                        } else if (currentPage <= 2) {
+                          pageNum = i + 1
+                        } else if (currentPage >= totalPages - 1) {
+                          pageNum = totalPages - 2 + i
+                        } else {
+                          pageNum = currentPage - 1 + i
+                        }
+
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => goToPage(pageNum)}
+                            className={
+                              currentPage === pageNum ? "bg-blue-600 text-white" : "border-slate-200 hover:bg-slate-50"
+                            }
+                          >
+                            {pageNum}
+                          </Button>
+                        )
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      className="border-slate-200 hover:bg-slate-50"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Quick Navigation */}
+      <Card className="border-slate-200 bg-white shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-slate-900 text-lg">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Users className="h-4 w-4 text-blue-600" />
+            </div>
+            Explore Your Scene
+          </CardTitle>
+          <CardDescription className="text-slate-600 text-sm">
+            Discover what's happening in {location?.city || "your area"}'s music scene
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Button variant="outline" className="justify-between hover:bg-slate-50 border-slate-200" asChild>
+              <a href="/dashboard/venues">
+                Explore Local Venues
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </Button>
+            <Button variant="outline" className="justify-between hover:bg-slate-50 border-slate-200" asChild>
+              <a href="/dashboard/create-playlist">
+                Create Custom Playlist
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </Button>
+            <Button variant="outline" className="justify-between hover:bg-slate-50 border-slate-200" asChild>
+              <a href="/test-ticketmaster">
+                Test API Connection
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Location Settings */}
       <div id="location-settings" className="max-w-2xl mx-auto">
         <LocationSettings onLocationUpdate={handleLocationUpdate} currentLocation={location} />
       </div>
