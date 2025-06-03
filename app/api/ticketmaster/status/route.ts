@@ -4,11 +4,24 @@ export async function GET() {
   try {
     const apiKey = process.env.TICKETMASTER_API_KEY
 
+    console.log("Ticketmaster API Key check:", {
+      hasKey: !!apiKey,
+      keyLength: apiKey?.length || 0,
+      keyPrefix: apiKey?.substring(0, 8) + "..." || "none",
+    })
+
     if (!apiKey) {
       return NextResponse.json({
         success: false,
         error: "Ticketmaster API key not configured",
         configured: false,
+        troubleshooting: {
+          steps: [
+            "Add TICKETMASTER_API_KEY to Vercel environment variables",
+            "Use your Consumer Key from Ticketmaster Developer Portal",
+            "Redeploy your application after adding the variable",
+          ],
+        },
       })
     }
 
@@ -21,7 +34,7 @@ export async function GET() {
     const startDateTime = formatTicketmasterDate(now)
 
     // Test the API with a very simple request
-    const testUrl = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${apiKey}&size=1&classificationName=music&city=New York&stateCode=NY&startDateTime=${startDateTime}`
+    const testUrl = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${apiKey}&size=1&classificationName=music&city=Chicago&stateCode=IL&startDateTime=${startDateTime}`
 
     console.log("Testing Ticketmaster API with URL:", testUrl.replace(apiKey, "***API_KEY***"))
 
@@ -42,9 +55,9 @@ export async function GET() {
         details: errorText,
         troubleshooting: {
           possibleIssues: [
-            "Invalid API key",
-            "API key not activated",
-            "Rate limit exceeded",
+            "Invalid API key - check your Consumer Key from Ticketmaster",
+            "API key not activated - verify in Ticketmaster Developer Portal",
+            "Rate limit exceeded - wait a moment and try again",
             "Network connectivity issue",
           ],
         },
@@ -72,7 +85,7 @@ export async function GET() {
       error: error instanceof Error ? error.message : "API test failed",
       troubleshooting: {
         possibleIssues: [
-          "Invalid API key",
+          "Invalid API key format",
           "API key not activated",
           "Rate limit exceeded",
           "Network connectivity issue",
