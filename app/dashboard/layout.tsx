@@ -12,6 +12,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  console.log("DASHBOARD LAYOUT VERSION: " + new Date().toISOString())
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
