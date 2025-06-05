@@ -47,6 +47,8 @@ interface LocationData {
 }
 
 export default function DashboardScreen() {
+  console.log("DASHBOARD SCREEN COMPONENT TEST: " + new Date().toISOString())
+
   const [location, setLocation] = useState<LocationData | null>(null)
   const [events, setEvents] = useState<Event[]>([])
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
