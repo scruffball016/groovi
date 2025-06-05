@@ -26,7 +26,6 @@ import {
   Filter,
   X,
   CheckCircle,
-  BarChart3,
   ChevronDown,
   ChevronUp,
 } from "lucide-react"
@@ -552,10 +551,51 @@ export default function DashboardPage() {
         </Button>
       )}
 
-      {/* Main Events Card - Everything contained within */}
+      {/* Stats Cards - COMPLETELY SEPARATE from Upcoming Shows */}
+      {location && allEvents.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Upcoming Events</p>
+                  <p className="text-2xl font-bold">{filteredEvents.length}</p>
+                  {hasActiveFilters && <p className="text-xs text-muted-foreground">of {allEvents.length} total</p>}
+                </div>
+                <Calendar className="h-8 w-8 text-blue-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Local Venues</p>
+                  <p className="text-2xl font-bold">{uniqueVenues.length}</p>
+                </div>
+                <MapPin className="h-8 w-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Music Genres</p>
+                  <p className="text-2xl font-bold">{uniqueGenres.length}</p>
+                </div>
+                <Music className="h-8 w-8 text-purple-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Upcoming Shows Card - NO STATS INSIDE */}
       <Card className="w-full">
-        {/* Card Header */}
-        <CardHeader className="space-y-4">
+        <CardHeader>
           <div>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
@@ -567,93 +607,65 @@ export default function DashboardPage() {
             </CardDescription>
           </div>
 
-          {/* Action Bar - Completely restructured to prevent overlap */}
+          {/* Controls - Only buttons, no stats */}
           {location && (
-            <div className="pt-4 border-t space-y-4">
-              {/* Controls Section - Full width container */}
-              <div className="w-full">
-                <div className="flex flex-col space-y-3">
-                  {/* Primary Actions - Always stacked vertically */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      onClick={() => searchEvents(false)}
-                      disabled={eventsLoading || !location || !apiStatus?.success}
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {eventsLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                          Searching...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-1" />
-                          Refresh Events
-                        </>
-                      )}
-                    </Button>
-
-                    <Button
-                      onClick={() => setShowFilters(!showFilters)}
-                      variant={showFilters ? "default" : "outline"}
-                      size="sm"
-                      className="flex items-center gap-1"
-                    >
-                      <Filter className="h-4 w-4" />
-                      Filters
-                      {hasActiveFilters && (
-                        <Badge variant="secondary" className="ml-1 text-xs px-1">
-                          {filters.venues.length +
-                            filters.genres.length +
-                            (filters.dateFrom ? 1 : 0) +
-                            (filters.dateTo ? 1 : 0) +
-                            (filters.searchText ? 1 : 0)}
-                        </Badge>
-                      )}
-                      {showFilters ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-                    </Button>
-
-                    <Button
-                      onClick={() => setShowSettings(!showSettings)}
-                      variant={showSettings ? "default" : "outline"}
-                      size="sm"
-                      className="flex items-center gap-1"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Settings
-                      {showSettings ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-                    </Button>
-                  </div>
-
-                  {/* Stats Section - Always on separate line */}
-                  {allEvents.length > 0 && (
-                    <div className="w-full pt-2 border-t border-muted">
-                      <div className="flex items-center justify-center sm:justify-start gap-6 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <BarChart3 className="h-4 w-4" />
-                          <span>
-                            {filteredEvents.length}/{allEvents.length} events
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>{uniqueVenues.length} venues</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Music className="h-4 w-4" />
-                          <span>{uniqueGenres.length} genres</span>
-                        </div>
-                      </div>
-                    </div>
+            <div className="pt-4 border-t">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  onClick={() => searchEvents(false)}
+                  disabled={eventsLoading || !location || !apiStatus?.success}
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {eventsLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Refresh Events
+                    </>
                   )}
-                </div>
+                </Button>
+
+                <Button
+                  onClick={() => setShowFilters(!showFilters)}
+                  variant={showFilters ? "default" : "outline"}
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <Filter className="h-4 w-4" />
+                  Filters
+                  {hasActiveFilters && (
+                    <Badge variant="secondary" className="ml-1 text-xs px-1">
+                      {filters.venues.length +
+                        filters.genres.length +
+                        (filters.dateFrom ? 1 : 0) +
+                        (filters.dateTo ? 1 : 0) +
+                        (filters.searchText ? 1 : 0)}
+                    </Badge>
+                  )}
+                  {showFilters ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                </Button>
+
+                <Button
+                  onClick={() => setShowSettings(!showSettings)}
+                  variant={showSettings ? "default" : "outline"}
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <Settings className="h-4 w-4" />
+                  Settings
+                  {showSettings ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                </Button>
               </div>
             </div>
           )}
         </CardHeader>
 
-        {/* Filters Panel - Contained within card */}
+        {/* Filters Panel */}
         {showFilters && allEvents.length > 0 && (
           <div className="px-6 pb-4">
             <div className="bg-muted/30 rounded-lg p-4 border border-muted">
@@ -757,7 +769,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Settings Panel - Contained within card */}
+        {/* Settings Panel */}
         {showSettings && (
           <div className="px-6 pb-4">
             <div className="bg-muted/30 rounded-lg p-4 border border-muted">
@@ -934,7 +946,7 @@ export default function DashboardPage() {
           )}
         </CardContent>
 
-        {/* Pagination - Contained within card footer */}
+        {/* Pagination */}
         {filteredEvents.length > 0 && totalPages > 1 && (
           <CardFooter className="border-t">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
