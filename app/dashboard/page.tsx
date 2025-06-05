@@ -26,7 +26,6 @@ import {
   Filter,
   X,
   CheckCircle,
-  BarChart3,
 } from "lucide-react"
 
 interface LocationData {
@@ -468,11 +467,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 pb-8">
-      {/* Main container with max width and centered */}
-      <div className="container mx-auto px-4 py-6">
+    <div className="w-full bg-gray-50">
+      {/* Main container with fixed width and auto margins */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         {/* App Header */}
-        <div className="mb-8 text-center">
+        <div className="mb-6 text-center py-4">
           <div className="flex items-center justify-center mb-2">
             <div className="p-2 bg-green-500 rounded-lg mr-3">
               <Music className="h-6 w-6 text-white" />
@@ -535,34 +534,66 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Main Content Area - Two Column Layout on Desktop, Single Column on Mobile */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Main Content Area - Simple Two Column Layout */}
+        <div className="flex flex-col md:flex-row gap-6">
           {/* Main Content Column */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Generate Playlist Button */}
+          <div className="w-full md:w-2/3 space-y-6">
+            {/* Stats Row - Only show when location is set */}
+            {location && allEvents.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Card className="bg-white shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900">{allEvents.length}</div>
+                    <div className="text-sm text-gray-600">Total Events</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900">{filteredEvents.length}</div>
+                    <div className="text-sm text-gray-600">Filtered Events</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900">{uniqueVenues.length}</div>
+                    <div className="text-sm text-gray-600">Local Venues</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900">{uniqueGenres.length}</div>
+                    <div className="text-sm text-gray-600">Music Genres</div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Generate Playlist Button - Only show when location is set */}
             {location && (
-              <Button
-                onClick={generateWeeklyPlaylist}
-                disabled={loading || filteredEvents.length === 0}
-                className="w-full bg-green-500 hover:bg-green-600 text-white py-6 rounded-lg shadow-sm"
-                size="lg"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Creating Playlist...
-                  </>
-                ) : (
-                  <>
-                    <Music className="h-5 w-5 mr-2" />
-                    Generate Playlist ({filteredEvents.length} events)
-                  </>
-                )}
-              </Button>
+              <div className="w-full">
+                <Button
+                  onClick={generateWeeklyPlaylist}
+                  disabled={loading || filteredEvents.length === 0}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white py-6 rounded-lg shadow-sm"
+                  size="lg"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Creating Playlist...
+                    </>
+                  ) : (
+                    <>
+                      <Music className="h-5 w-5 mr-2" />
+                      Generate Playlist ({filteredEvents.length} events)
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
 
             {/* Events Section */}
-            <Card className="bg-white shadow-sm">
+            <Card className="bg-white shadow-sm w-full">
               {/* Card Header with Title */}
               <CardHeader className="pb-0">
                 <div className="flex flex-col space-y-1">
@@ -977,44 +1008,12 @@ export default function DashboardPage() {
                 </CardFooter>
               )}
             </Card>
-
-            {/* Location Settings - Only on mobile */}
-            <div className="lg:hidden">
-              <LocationSettings onLocationUpdate={handleLocationUpdate} currentLocation={location} />
-            </div>
           </div>
 
           {/* Sidebar Column */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Stats Cards */}
-            {location && allEvents.length > 0 && (
-              <Card className="bg-white shadow-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center">
-                    <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
-                    Event Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                    <div className="text-sm text-gray-600">Total Events</div>
-                    <div className="text-xl font-bold text-gray-900">{allEvents.length}</div>
-                  </div>
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                    <div className="text-sm text-gray-600">Filtered Events</div>
-                    <div className="text-xl font-bold text-gray-900">{filteredEvents.length}</div>
-                  </div>
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                    <div className="text-sm text-gray-600">Local Venues</div>
-                    <div className="text-xl font-bold text-gray-900">{uniqueVenues.length}</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">Music Genres</div>
-                    <div className="text-xl font-bold text-gray-900">{uniqueGenres.length}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+          <div className="w-full md:w-1/3 space-y-6">
+            {/* Location Settings */}
+            <LocationSettings onLocationUpdate={handleLocationUpdate} currentLocation={location} />
 
             {/* Quick Actions Card */}
             {location && (
@@ -1043,11 +1042,6 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             )}
-
-            {/* Location Settings - Only on desktop */}
-            <div className="hidden lg:block">
-              <LocationSettings onLocationUpdate={handleLocationUpdate} currentLocation={location} />
-            </div>
           </div>
         </div>
       </div>
