@@ -567,74 +567,79 @@ export default function DashboardPage() {
             </CardDescription>
           </div>
 
-          {/* Action Bar - Contained within header */}
+          {/* Action Bar - Properly contained within header */}
           {location && (
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
-              <Button
-                onClick={() => searchEvents(false)}
-                disabled={eventsLoading || !location || !apiStatus?.success}
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {eventsLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-1" />
-                    Refresh Events
-                  </>
-                )}
-              </Button>
+            <div className="space-y-3 pt-2 border-t">
+              {/* Primary Actions Row */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    onClick={() => searchEvents(false)}
+                    disabled={eventsLoading || !location || !apiStatus?.success}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {eventsLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-1" />
+                        Refresh Events
+                      </>
+                    )}
+                  </Button>
 
-              <Button
-                onClick={() => setShowFilters(!showFilters)}
-                variant={showFilters ? "default" : "outline"}
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <Filter className="h-4 w-4" />
-                Filters
-                {hasActiveFilters && (
-                  <Badge variant="secondary" className="ml-1 text-xs px-1">
-                    {filters.venues.length +
-                      filters.genres.length +
-                      (filters.dateFrom ? 1 : 0) +
-                      (filters.dateTo ? 1 : 0) +
-                      (filters.searchText ? 1 : 0)}
-                  </Badge>
-                )}
-                {showFilters ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-              </Button>
+                  <Button
+                    onClick={() => setShowFilters(!showFilters)}
+                    variant={showFilters ? "default" : "outline"}
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <Filter className="h-4 w-4" />
+                    Filters
+                    {hasActiveFilters && (
+                      <Badge variant="secondary" className="ml-1 text-xs px-1">
+                        {filters.venues.length +
+                          filters.genres.length +
+                          (filters.dateFrom ? 1 : 0) +
+                          (filters.dateTo ? 1 : 0) +
+                          (filters.searchText ? 1 : 0)}
+                      </Badge>
+                    )}
+                    {showFilters ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                  </Button>
 
-              <Button
-                onClick={() => setShowSettings(!showSettings)}
-                variant={showSettings ? "default" : "outline"}
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <Settings className="h-4 w-4" />
-                Settings
-                {showSettings ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-              </Button>
-
-              {/* Stats Display */}
-              {allEvents.length > 0 && (
-                <div className="flex items-center gap-4 ml-auto text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <BarChart3 className="h-4 w-4" />
-                    <span>
-                      {filteredEvents.length}/{allEvents.length} events
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    <span>{uniqueVenues.length} venues</span>
-                  </div>
+                  <Button
+                    onClick={() => setShowSettings(!showSettings)}
+                    variant={showSettings ? "default" : "outline"}
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <Settings className="h-4 w-4" />
+                    Settings
+                    {showSettings ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                  </Button>
                 </div>
-              )}
+
+                {/* Stats Display - Separate row on mobile, right side on desktop */}
+                {allEvents.length > 0 && (
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground sm:ml-auto">
+                    <div className="flex items-center gap-1">
+                      <BarChart3 className="h-4 w-4" />
+                      <span>
+                        {filteredEvents.length}/{allEvents.length} events
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      <span>{uniqueVenues.length} venues</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </CardHeader>
