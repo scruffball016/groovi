@@ -469,11 +469,6 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
-      {/* DEPLOYMENT TEST - PURPLE BANNER */}
-      <div className="w-full bg-purple-600 text-white text-center py-4 text-xl font-bold">
-        🚨 DEPLOYMENT TEST - PURPLE BANNER - {new Date().toISOString().slice(0, 10)} 🚨
-      </div>
-
       {/* Main container with max width and centered */}
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* App Header */}
