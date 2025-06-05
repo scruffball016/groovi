@@ -26,7 +26,6 @@ import {
   Filter,
   X,
   CheckCircle,
-  BarChart3,
 } from "lucide-react"
 
 interface LocationData {
@@ -469,31 +468,29 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
-      {/* Main container with max width and centered */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* SINGLE COLUMN LAYOUT - NO OVERLAPPING */}
+      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
         {/* App Header */}
-        <div className="mb-8">
+        <div className="text-center">
           <div className="flex items-center justify-center mb-2">
             <div className="p-2 bg-green-500 rounded-lg mr-3">
               <Music className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Groovi Music Dashboard</h1>
           </div>
-          <p className="text-center text-gray-600 mb-2">
+          <p className="text-gray-600 mb-2">
             Discover local music and create playlists from artists playing in your area
           </p>
           {location && (
-            <div className="flex justify-center">
-              <Badge className="bg-green-100 text-green-800 border-green-200">
-                <MapPin className="h-3 w-3 mr-1" />
-                {location.city}, {location.state}
-              </Badge>
-            </div>
+            <Badge className="bg-green-100 text-green-800 border-green-200">
+              <MapPin className="h-3 w-3 mr-1" />
+              {location.city}, {location.state}
+            </Badge>
           )}
         </div>
 
         {/* Status Alerts */}
-        <div className="mb-6 space-y-4">
+        <div className="space-y-4">
           {currentPlaylist && (
             <Alert className="bg-green-50 border-green-200">
               <CheckCircle className="h-4 w-4" />
@@ -537,522 +534,479 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Main Content Layout */}
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Main Content Area */}
-          <div className="flex-1 order-2 lg:order-1">
-            {/* Generate Playlist Button */}
-            {location && (
-              <div className="mb-6">
+        {/* Stats Row - Only show when location is set */}
+        {location && allEvents.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="bg-white shadow-sm">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-gray-900">{allEvents.length}</div>
+                <div className="text-sm text-gray-600">Total Events</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white shadow-sm">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-gray-900">{filteredEvents.length}</div>
+                <div className="text-sm text-gray-600">Filtered Events</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white shadow-sm">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-gray-900">{uniqueVenues.length}</div>
+                <div className="text-sm text-gray-600">Local Venues</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-white shadow-sm">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-gray-900">{uniqueGenres.length}</div>
+                <div className="text-sm text-gray-600">Music Genres</div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Generate Playlist Button - Only show when location is set */}
+        {location && (
+          <div className="w-full">
+            <Button
+              onClick={generateWeeklyPlaylist}
+              disabled={loading || filteredEvents.length === 0}
+              className="w-full bg-green-500 hover:bg-green-600 text-white py-6 rounded-lg shadow-sm"
+              size="lg"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Creating Playlist...
+                </>
+              ) : (
+                <>
+                  <Music className="h-5 w-5 mr-2" />
+                  Generate Playlist ({filteredEvents.length} events)
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Events Section */}
+        <Card className="bg-white shadow-sm w-full">
+          {/* Card Header with Title */}
+          <CardHeader className="pb-0">
+            <div className="flex flex-col space-y-1">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-blue-600" />
+                <CardTitle>
+                  Upcoming Shows
+                  {location && <span className="text-gray-600 ml-1">in {location.city}</span>}
+                </CardTitle>
+              </div>
+              <CardDescription>
+                {location ? "Live music events happening near you" : "Set your location to search for local events"}
+              </CardDescription>
+            </div>
+          </CardHeader>
+
+          {/* Toolbar - Centered under header */}
+          {location && (
+            <div className="px-6 py-4 flex justify-center">
+              <div className="inline-flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-100">
                 <Button
-                  onClick={generateWeeklyPlaylist}
-                  disabled={loading || filteredEvents.length === 0}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white py-6 rounded-lg shadow-sm"
-                  size="lg"
+                  onClick={() => searchEvents(false)}
+                  disabled={eventsLoading || !location || !apiStatus?.success}
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  {loading ? (
+                  {eventsLoading ? (
                     <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      Creating Playlist...
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      Searching...
                     </>
                   ) : (
                     <>
-                      <Music className="h-5 w-5 mr-2" />
-                      Generate Playlist ({filteredEvents.length} events)
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Refresh
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={() => setShowFilters(!showFilters)}
+                  variant={showFilters ? "default" : "outline"}
+                  size="sm"
+                  className={showFilters ? "bg-blue-600 text-white" : "border-gray-200"}
+                >
+                  <Filter className="h-4 w-4 mr-1" />
+                  {showFilters ? "Hide Filters" : "Filters"}
+                  {hasActiveFilters && (
+                    <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 text-xs">
+                      {filters.venues.length +
+                        filters.genres.length +
+                        (filters.dateFrom ? 1 : 0) +
+                        (filters.dateTo ? 1 : 0) +
+                        (filters.searchText ? 1 : 0)}
+                    </Badge>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={() => setShowSettings(!showSettings)}
+                  variant={showSettings ? "default" : "outline"}
+                  size="sm"
+                  className={showSettings ? "bg-blue-600 text-white" : "border-gray-200"}
+                >
+                  <Settings className="h-4 w-4 mr-1" />
+                  {showSettings ? "Hide Settings" : "Settings"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Filters Panel */}
+          {showFilters && allEvents.length > 0 && (
+            <div className="px-6 pt-0 pb-4">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900">Filter Events</h4>
+                  {hasActiveFilters && (
+                    <Button onClick={clearFilters} variant="outline" size="sm">
+                      <X className="h-4 w-4 mr-1" />
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Text Search */}
+                  <div>
+                    <Label htmlFor="search-text" className="text-sm font-medium">
+                      Search
+                    </Label>
+                    <Input
+                      id="search-text"
+                      value={filters.searchText}
+                      onChange={(e) => setFilters((prev) => ({ ...prev, searchText: e.target.value }))}
+                      placeholder="Artist, venue, city..."
+                      className="mt-1"
+                    />
+                  </div>
+
+                  {/* Date Range */}
+                  <div>
+                    <Label className="text-sm font-medium">Date Range</Label>
+                    <div className="space-y-2 mt-1">
+                      <Input
+                        type="date"
+                        value={filters.dateFrom}
+                        onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
+                        className="text-sm"
+                      />
+                      <Input
+                        type="date"
+                        value={filters.dateTo}
+                        onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Venues */}
+                  <div>
+                    <Label className="text-sm font-medium">Venues ({filters.venues.length})</Label>
+                    <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
+                      {uniqueVenues.slice(0, 8).map((venue) => (
+                        <div key={venue} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`venue-${venue}`}
+                            checked={filters.venues.includes(venue)}
+                            onCheckedChange={() => handleVenueToggle(venue)}
+                          />
+                          <Label htmlFor={`venue-${venue}`} className="text-xs cursor-pointer">
+                            {venue.length > 25 ? venue.substring(0, 25) + "..." : venue}
+                          </Label>
+                        </div>
+                      ))}
+                      {uniqueVenues.length > 8 && (
+                        <p className="text-xs text-gray-500">+{uniqueVenues.length - 8} more venues</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Genres */}
+                  <div>
+                    <Label className="text-sm font-medium">Genres ({filters.genres.length})</Label>
+                    <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
+                      {uniqueGenres.slice(0, 8).map((genre) => (
+                        <div key={genre} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`genre-${genre}`}
+                            checked={filters.genres.includes(genre)}
+                            onCheckedChange={() => handleGenreToggle(genre)}
+                          />
+                          <Label htmlFor={`genre-${genre}`} className="text-xs cursor-pointer">
+                            {genre}
+                          </Label>
+                        </div>
+                      ))}
+                      {uniqueGenres.length > 8 && (
+                        <p className="text-xs text-gray-500">+{uniqueGenres.length - 8} more genres</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {hasActiveFilters && (
+                  <div className="mt-3 text-sm text-gray-600">
+                    Showing {filteredEvents.length} of {allEvents.length} events
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Settings Panel */}
+          {showSettings && (
+            <div className="px-6 pt-0 pb-4">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                <h4 className="font-medium text-gray-900 mb-3">Search Settings</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="radius" className="text-sm font-medium">
+                      Radius (miles)
+                    </Label>
+                    <Input
+                      id="radius"
+                      value={searchParams.radius}
+                      onChange={(e) => setSearchParams((prev) => ({ ...prev, radius: e.target.value }))}
+                      placeholder="25"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="days" className="text-sm font-medium">
+                      Days Ahead
+                    </Label>
+                    <Input
+                      id="days"
+                      value={searchParams.daysAhead}
+                      onChange={(e) => setSearchParams((prev) => ({ ...prev, daysAhead: e.target.value }))}
+                      placeholder="7"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="size" className="text-sm font-medium">
+                      Max Results
+                    </Label>
+                    <Input
+                      id="size"
+                      value={searchParams.size}
+                      onChange={(e) => setSearchParams((prev) => ({ ...prev, size: e.target.value }))}
+                      placeholder="100"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <Button
+                  onClick={() => searchEvents(false)}
+                  disabled={eventsLoading}
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {eventsLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4 mr-2" />
+                      Search with New Parameters
                     </>
                   )}
                 </Button>
               </div>
-            )}
-
-            {/* Events Section */}
-            <Card className="bg-white shadow-sm mb-6">
-              {/* Card Header with Title */}
-              <CardHeader className="pb-0">
-                <div className="flex flex-col space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-blue-600" />
-                    <CardTitle>
-                      Upcoming Shows
-                      {location && <span className="text-gray-600 ml-1">in {location.city}</span>}
-                    </CardTitle>
-                  </div>
-                  <CardDescription>
-                    {location ? "Live music events happening near you" : "Set your location to search for local events"}
-                  </CardDescription>
-                </div>
-              </CardHeader>
-
-              {/* Toolbar - Centered under header */}
-              {location && (
-                <div className="px-6 py-4 flex justify-center">
-                  <div className="inline-flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-100">
-                    <Button
-                      onClick={() => searchEvents(false)}
-                      disabled={eventsLoading || !location || !apiStatus?.success}
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {eventsLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                          Searching...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-1" />
-                          Refresh
-                        </>
-                      )}
-                    </Button>
-
-                    <Button
-                      onClick={() => setShowFilters(!showFilters)}
-                      variant={showFilters ? "default" : "outline"}
-                      size="sm"
-                      className={showFilters ? "bg-blue-600 text-white" : "border-gray-200"}
-                    >
-                      <Filter className="h-4 w-4 mr-1" />
-                      {showFilters ? "Hide Filters" : "Filters"}
-                      {hasActiveFilters && (
-                        <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 text-xs">
-                          {filters.venues.length +
-                            filters.genres.length +
-                            (filters.dateFrom ? 1 : 0) +
-                            (filters.dateTo ? 1 : 0) +
-                            (filters.searchText ? 1 : 0)}
-                        </Badge>
-                      )}
-                    </Button>
-
-                    <Button
-                      onClick={() => setShowSettings(!showSettings)}
-                      variant={showSettings ? "default" : "outline"}
-                      size="sm"
-                      className={showSettings ? "bg-blue-600 text-white" : "border-gray-200"}
-                    >
-                      <Settings className="h-4 w-4 mr-1" />
-                      {showSettings ? "Hide Settings" : "Settings"}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Filters Panel */}
-              {showFilters && allEvents.length > 0 && (
-                <div className="px-6 pt-0 pb-4">
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-gray-900">Filter Events</h4>
-                      {hasActiveFilters && (
-                        <Button onClick={clearFilters} variant="outline" size="sm">
-                          <X className="h-4 w-4 mr-1" />
-                          Clear All
-                        </Button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {/* Text Search */}
-                      <div>
-                        <Label htmlFor="search-text" className="text-sm font-medium">
-                          Search
-                        </Label>
-                        <Input
-                          id="search-text"
-                          value={filters.searchText}
-                          onChange={(e) => setFilters((prev) => ({ ...prev, searchText: e.target.value }))}
-                          placeholder="Artist, venue, city..."
-                          className="mt-1"
-                        />
-                      </div>
-
-                      {/* Date Range */}
-                      <div>
-                        <Label className="text-sm font-medium">Date Range</Label>
-                        <div className="space-y-2 mt-1">
-                          <Input
-                            type="date"
-                            value={filters.dateFrom}
-                            onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
-                            className="text-sm"
-                          />
-                          <Input
-                            type="date"
-                            value={filters.dateTo}
-                            onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
-                            className="text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Venues */}
-                      <div>
-                        <Label className="text-sm font-medium">Venues ({filters.venues.length})</Label>
-                        <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
-                          {uniqueVenues.slice(0, 8).map((venue) => (
-                            <div key={venue} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`venue-${venue}`}
-                                checked={filters.venues.includes(venue)}
-                                onCheckedChange={() => handleVenueToggle(venue)}
-                              />
-                              <Label htmlFor={`venue-${venue}`} className="text-xs cursor-pointer">
-                                {venue.length > 25 ? venue.substring(0, 25) + "..." : venue}
-                              </Label>
-                            </div>
-                          ))}
-                          {uniqueVenues.length > 8 && (
-                            <p className="text-xs text-gray-500">+{uniqueVenues.length - 8} more venues</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Genres */}
-                      <div>
-                        <Label className="text-sm font-medium">Genres ({filters.genres.length})</Label>
-                        <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
-                          {uniqueGenres.slice(0, 8).map((genre) => (
-                            <div key={genre} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`genre-${genre}`}
-                                checked={filters.genres.includes(genre)}
-                                onCheckedChange={() => handleGenreToggle(genre)}
-                              />
-                              <Label htmlFor={`genre-${genre}`} className="text-xs cursor-pointer">
-                                {genre}
-                              </Label>
-                            </div>
-                          ))}
-                          {uniqueGenres.length > 8 && (
-                            <p className="text-xs text-gray-500">+{uniqueGenres.length - 8} more genres</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {hasActiveFilters && (
-                      <div className="mt-3 text-sm text-gray-600">
-                        Showing {filteredEvents.length} of {allEvents.length} events
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Settings Panel */}
-              {showSettings && (
-                <div className="px-6 pt-0 pb-4">
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <h4 className="font-medium text-gray-900 mb-3">Search Settings</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="radius" className="text-sm font-medium">
-                          Radius (miles)
-                        </Label>
-                        <Input
-                          id="radius"
-                          value={searchParams.radius}
-                          onChange={(e) => setSearchParams((prev) => ({ ...prev, radius: e.target.value }))}
-                          placeholder="25"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="days" className="text-sm font-medium">
-                          Days Ahead
-                        </Label>
-                        <Input
-                          id="days"
-                          value={searchParams.daysAhead}
-                          onChange={(e) => setSearchParams((prev) => ({ ...prev, daysAhead: e.target.value }))}
-                          placeholder="7"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="size" className="text-sm font-medium">
-                          Max Results
-                        </Label>
-                        <Input
-                          id="size"
-                          value={searchParams.size}
-                          onChange={(e) => setSearchParams((prev) => ({ ...prev, size: e.target.value }))}
-                          placeholder="100"
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => searchEvents(false)}
-                      disabled={eventsLoading}
-                      className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {eventsLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Searching...
-                        </>
-                      ) : (
-                        <>
-                          <Search className="h-4 w-4 mr-2" />
-                          Search with New Parameters
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Card Content - Events List */}
-              <CardContent className="p-6 pt-2">
-                {!location ? (
-                  <div className="text-center py-12">
-                    <MapPin className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">Location Required</h3>
-                    <p className="text-gray-600 mb-6">
-                      Please set your location below to automatically search for upcoming shows in your area.
-                    </p>
-                  </div>
-                ) : !apiStatus?.success ? (
-                  <div className="text-center py-12">
-                    <XCircle className="h-16 w-16 text-red-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">API Not Available</h3>
-                    <p className="text-gray-600 mb-6">
-                      Ticketmaster API is not properly configured. Please check the configuration.
-                    </p>
-                  </div>
-                ) : eventsLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-3" />
-                    <span className="text-gray-600">Searching for events in {location?.city || "your area"}...</span>
-                  </div>
-                ) : filteredEvents.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">
-                      {hasActiveFilters ? "No Events Match Filters" : "No Events Found"}
-                    </h3>
-                    <p className="text-gray-600 mb-6">
-                      {hasActiveFilters ? (
-                        <>
-                          No events match your current filters. Try adjusting or clearing your filters.
-                          <br />
-                          Found {allEvents.length} total events before filtering.
-                        </>
-                      ) : (
-                        <>
-                          No upcoming shows found in {location?.city} for the next {searchParams.daysAhead} days.
-                          <br />
-                          Try adjusting the search radius or time range in settings.
-                        </>
-                      )}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Events List */}
-                    {currentEvents.map((event, index) => (
-                      <div
-                        key={`${event.id}-${index}`}
-                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-all"
-                      >
-                        <div className="flex flex-col md:flex-row md:items-center gap-4">
-                          <div className="flex-shrink-0">
-                            {event.imageUrl ? (
-                              <img
-                                src={event.imageUrl || "/placeholder.svg"}
-                                alt={event.artistName}
-                                className="w-16 h-16 rounded-lg object-cover"
-                              />
-                            ) : (
-                              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                                {event.artistName.charAt(0)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-grow min-w-0">
-                            <h4 className="font-semibold text-lg text-gray-900">{event.artistName}</h4>
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                              <MapPin className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate">{event.venueName}</span>
-                              {event.city && event.state && (
-                                <span className="text-gray-500">
-                                  • {event.city}, {event.state}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                              <Calendar className="h-3 w-3 flex-shrink-0" />
-                              <span>{new Date(event.date).toLocaleDateString()}</span>
-                              {event.time && <span className="text-gray-500">at {event.time}</span>}
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              {event.genre && (
-                                <Badge variant="outline" className="text-xs">
-                                  {event.genre}
-                                </Badge>
-                              )}
-                              {event.price && (
-                                <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-                                  {event.price}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex-shrink-0">
-                            {event.ticketUrl && (
-                              <Button
-                                onClick={() => window.open(event.ticketUrl, "_blank")}
-                                size="sm"
-                                className="bg-blue-600 hover:bg-blue-700 text-white w-full md:w-auto"
-                              >
-                                <Ticket className="h-4 w-4 mr-2" />
-                                Buy Tickets
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-
-              {/* Pagination in Card Footer */}
-              {filteredEvents.length > 0 && totalPages > 1 && (
-                <CardFooter className="border-t border-gray-100 p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
-                    <div className="text-sm text-gray-600">
-                      Showing {startIndex + 1}-{Math.min(endIndex, filteredEvents.length)} of {filteredEvents.length}{" "}
-                      events
-                      {hasActiveFilters && ` (filtered from ${allEvents.length} total)`}
-                    </div>
-                    <div className="flex items-center gap-2 justify-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={goToPreviousPage}
-                        disabled={currentPage === 1}
-                        className="border-gray-200"
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
-                      </Button>
-
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-                          let pageNum
-                          if (totalPages <= 3) {
-                            pageNum = i + 1
-                          } else if (currentPage <= 2) {
-                            pageNum = i + 1
-                          } else if (currentPage >= totalPages - 1) {
-                            pageNum = totalPages - 2 + i
-                          } else {
-                            pageNum = currentPage - 1 + i
-                          }
-
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={currentPage === pageNum ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => goToPage(pageNum)}
-                              className={currentPage === pageNum ? "bg-blue-600 text-white" : "border-gray-200"}
-                            >
-                              {pageNum}
-                            </Button>
-                          )
-                        })}
-                      </div>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={goToNextPage}
-                        disabled={currentPage === totalPages}
-                        className="border-gray-200"
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardFooter>
-              )}
-            </Card>
-
-            {/* Location Settings - Always at bottom */}
-            <div className="mb-6">
-              <LocationSettings onLocationUpdate={handleLocationUpdate} currentLocation={location} />
             </div>
-          </div>
+          )}
 
-          {/* Right Sidebar - Stats and Summary */}
-          <div className="w-full lg:w-80 order-1 lg:order-2">
-            {location && (
-              <div className="sticky top-6 space-y-4">
-                {/* Stats Summary Card */}
-                <Card className="bg-white shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg flex items-center">
-                      <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
-                      Event Stats
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                      <div className="text-sm text-gray-600">Total Events</div>
-                      <div className="text-xl font-bold text-gray-900">{allEvents.length}</div>
+          {/* Card Content - Events List */}
+          <CardContent className="p-6 pt-2">
+            {!location ? (
+              <div className="text-center py-12">
+                <MapPin className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Location Required</h3>
+                <p className="text-gray-600 mb-6">
+                  Please set your location below to automatically search for upcoming shows in your area.
+                </p>
+              </div>
+            ) : !apiStatus?.success ? (
+              <div className="text-center py-12">
+                <XCircle className="h-16 w-16 text-red-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">API Not Available</h3>
+                <p className="text-gray-600 mb-6">
+                  Ticketmaster API is not properly configured. Please check the configuration.
+                </p>
+              </div>
+            ) : eventsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-3" />
+                <span className="text-gray-600">Searching for events in {location?.city || "your area"}...</span>
+              </div>
+            ) : filteredEvents.length === 0 ? (
+              <div className="text-center py-12">
+                <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">
+                  {hasActiveFilters ? "No Events Match Filters" : "No Events Found"}
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {hasActiveFilters ? (
+                    <>
+                      No events match your current filters. Try adjusting or clearing your filters.
+                      <br />
+                      Found {allEvents.length} total events before filtering.
+                    </>
+                  ) : (
+                    <>
+                      No upcoming shows found in {location?.city} for the next {searchParams.daysAhead} days.
+                      <br />
+                      Try adjusting the search radius or time range in settings.
+                    </>
+                  )}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Events List */}
+                {currentEvents.map((event, index) => (
+                  <div
+                    key={`${event.id}-${index}`}
+                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-all"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center gap-4">
+                      <div className="flex-shrink-0">
+                        {event.imageUrl ? (
+                          <img
+                            src={event.imageUrl || "/placeholder.svg"}
+                            alt={event.artistName}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                            {event.artistName.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <h4 className="font-semibold text-lg text-gray-900">{event.artistName}</h4>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{event.venueName}</span>
+                          {event.city && event.state && (
+                            <span className="text-gray-500">
+                              • {event.city}, {event.state}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                          <Calendar className="h-3 w-3 flex-shrink-0" />
+                          <span>{new Date(event.date).toLocaleDateString()}</span>
+                          {event.time && <span className="text-gray-500">at {event.time}</span>}
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {event.genre && (
+                            <Badge variant="outline" className="text-xs">
+                              {event.genre}
+                            </Badge>
+                          )}
+                          {event.price && (
+                            <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                              {event.price}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0">
+                        {event.ticketUrl && (
+                          <Button
+                            onClick={() => window.open(event.ticketUrl, "_blank")}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white w-full md:w-auto"
+                          >
+                            <Ticket className="h-4 w-4 mr-2" />
+                            Buy Tickets
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                      <div className="text-sm text-gray-600">Filtered Events</div>
-                      <div className="text-xl font-bold text-gray-900">{filteredEvents.length}</div>
-                    </div>
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                      <div className="text-sm text-gray-600">Local Venues</div>
-                      <div className="text-xl font-bold text-gray-900">{uniqueVenues.length}</div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-600">Music Genres</div>
-                      <div className="text-xl font-bold text-gray-900">{uniqueGenres.length}</div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Quick Actions Card */}
-                <Card className="bg-white shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button
-                      onClick={() => searchEvents(false)}
-                      disabled={eventsLoading || !location || !apiStatus?.success}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                      size="sm"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh Events
-                    </Button>
-                    <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="w-full" size="sm">
-                      <Filter className="h-4 w-4 mr-2" />
-                      {showFilters ? "Hide" : "Show"} Filters
-                    </Button>
-                    <Button
-                      onClick={() => setShowSettings(!showSettings)}
-                      variant="outline"
-                      className="w-full"
-                      size="sm"
-                    >
-                      <Settings className="h-4 w-4 mr-2" />
-                      {showSettings ? "Hide" : "Show"} Settings
-                    </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                ))}
               </div>
             )}
-          </div>
+          </CardContent>
+
+          {/* Pagination in Card Footer */}
+          {filteredEvents.length > 0 && totalPages > 1 && (
+            <CardFooter className="border-t border-gray-100 p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
+                <div className="text-sm text-gray-600">
+                  Showing {startIndex + 1}-{Math.min(endIndex, filteredEvents.length)} of {filteredEvents.length} events
+                  {hasActiveFilters && ` (filtered from ${allEvents.length} total)`}
+                </div>
+                <div className="flex items-center gap-2 justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className="border-gray-200"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </Button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+                      let pageNum
+                      if (totalPages <= 3) {
+                        pageNum = i + 1
+                      } else if (currentPage <= 2) {
+                        pageNum = i + 1
+                      } else if (currentPage >= totalPages - 1) {
+                        pageNum = totalPages - 2 + i
+                      } else {
+                        pageNum = currentPage - 1 + i
+                      }
+
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => goToPage(pageNum)}
+                          className={currentPage === pageNum ? "bg-blue-600 text-white" : "border-gray-200"}
+                        >
+                          {pageNum}
+                        </Button>
+                      )
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="border-gray-200"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            </CardFooter>
+          )}
+        </Card>
+
+        {/* Location Settings - Always at bottom */}
+        <div className="w-full">
+          <LocationSettings onLocationUpdate={handleLocationUpdate} currentLocation={location} />
         </div>
       </div>
     </div>
