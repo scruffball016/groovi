@@ -26,8 +26,6 @@ import {
   Filter,
   X,
   CheckCircle,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react"
 
 interface LocationData {
@@ -469,532 +467,584 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Discover local music and create playlists from artists playing in your area
-        </p>
-        {location && (
-          <Badge variant="outline" className="mt-2">
-            <MapPin className="h-3 w-3 mr-1" />
-            {location.city}, {location.state}
-          </Badge>
-        )}
-      </div>
-
-      {/* Status Alerts */}
-      {currentPlaylist && (
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4" />
-          <AlertDescription className="text-green-800">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <strong>🎵 Playlist Ready!</strong> "{currentPlaylist.name}" with {currentPlaylist.trackCount} tracks
-              </div>
-              {currentPlaylist.external_urls?.spotify && (
-                <Button
-                  size="sm"
-                  onClick={() => window.open(currentPlaylist.external_urls.spotify, "_blank")}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Open in Spotify
-                </Button>
-              )}
+    <div className="w-full bg-gray-50">
+      {/* Main container with fixed width and auto margins */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+        {/* App Header */}
+        <div className="mb-6 text-center py-4">
+          <div className="flex items-center justify-center mb-2">
+            <div className="p-2 bg-green-500 rounded-lg mr-3">
+              <Music className="h-6 w-6 text-white" />
             </div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {error && (
-        <Alert className="bg-red-50 border-red-200">
-          <XCircle className="h-4 w-4" />
-          <AlertDescription className="text-red-800">
-            <strong>Error:</strong> {error}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {!statusLoading && !apiStatus?.success && (
-        <Alert className="bg-yellow-50 border-yellow-200">
-          <XCircle className="h-4 w-4" />
-          <AlertDescription className="text-yellow-800">
-            <strong>API Issue:</strong> Ticketmaster API is not properly configured. Some features may not work.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Location Settings */}
-      <LocationSettings onLocationUpdate={handleLocationUpdate} currentLocation={location} />
-
-      {/* Generate Playlist Button */}
-      {location && (
-        <Button
-          onClick={generateWeeklyPlaylist}
-          disabled={loading || filteredEvents.length === 0}
-          className="w-full bg-green-500 hover:bg-green-600 text-white py-6 rounded-lg shadow-sm"
-          size="lg"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              Creating Playlist...
-            </>
-          ) : (
-            <>
-              <Music className="h-5 w-5 mr-2" />
-              Generate Playlist ({filteredEvents.length} events)
-            </>
-          )}
-        </Button>
-      )}
-
-      {/* Stats Cards - COMPLETELY SEPARATE from Upcoming Shows */}
-      {location && allEvents.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Upcoming Events</p>
-                  <p className="text-2xl font-bold">{filteredEvents.length}</p>
-                  {hasActiveFilters && <p className="text-xs text-muted-foreground">of {allEvents.length} total</p>}
-                </div>
-                <Calendar className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Local Venues</p>
-                  <p className="text-2xl font-bold">{uniqueVenues.length}</p>
-                </div>
-                <MapPin className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Music Genres</p>
-                  <p className="text-2xl font-bold">{uniqueGenres.length}</p>
-                </div>
-                <Music className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Upcoming Shows Card - NO STATS INSIDE */}
-      <Card className="w-full">
-        <CardHeader>
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Upcoming Shows
-              {location && <span className="text-muted-foreground ml-1">in {location.city}</span>}
-            </CardTitle>
-            <CardDescription>
-              {location ? "Live music events happening near you" : "Set your location to search for local events"}
-            </CardDescription>
+            <h1 className="text-2xl font-bold text-gray-900">Groovi Music Dashboard</h1>
           </div>
-
-          {/* Controls - Only buttons, no stats */}
+          <p className="text-gray-600 mb-2">
+            Discover local music and create playlists from artists playing in your area
+          </p>
           {location && (
-            <div className="pt-4 border-t">
-              <div className="flex flex-wrap items-center gap-2">
+            <Badge className="bg-green-100 text-green-800 border-green-200">
+              <MapPin className="h-3 w-3 mr-1" />
+              {location.city}, {location.state}
+            </Badge>
+          )}
+        </div>
+
+        {/* Status Alerts */}
+        <div className="mb-6 space-y-4">
+          {currentPlaylist && (
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription className="text-green-800">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div>
+                    <strong>🎵 Playlist Ready!</strong> "{currentPlaylist.name}" with {currentPlaylist.trackCount}{" "}
+                    tracks
+                  </div>
+                  {currentPlaylist.external_urls?.spotify && (
+                    <Button
+                      size="sm"
+                      onClick={() => window.open(currentPlaylist.external_urls.spotify, "_blank")}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open in Spotify
+                    </Button>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {error && (
+            <Alert className="bg-red-50 border-red-200">
+              <XCircle className="h-4 w-4" />
+              <AlertDescription className="text-red-800">
+                <strong>Error:</strong> {error}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {!statusLoading && !apiStatus?.success && (
+            <Alert className="bg-yellow-50 border-yellow-200">
+              <XCircle className="h-4 w-4" />
+              <AlertDescription className="text-yellow-800">
+                <strong>API Issue:</strong> Ticketmaster API is not properly configured. Some features may not work.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        {/* Main Content Area - Simple Two Column Layout */}
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Main Content Column */}
+          <div className="w-full md:w-2/3 space-y-6">
+            {/* Stats Row - Only show when location is set */}
+            {location && allEvents.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <Card className="bg-white shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900">{allEvents.length}</div>
+                    <div className="text-sm text-gray-600">Total Events</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900">{filteredEvents.length}</div>
+                    <div className="text-sm text-gray-600">Filtered Events</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900">{uniqueVenues.length}</div>
+                    <div className="text-sm text-gray-600">Local Venues</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-gray-900">{uniqueGenres.length}</div>
+                    <div className="text-sm text-gray-600">Music Genres</div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Generate Playlist Button - Only show when location is set */}
+            {location && (
+              <div className="w-full">
                 <Button
-                  onClick={() => searchEvents(false)}
-                  disabled={eventsLoading || !location || !apiStatus?.success}
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={generateWeeklyPlaylist}
+                  disabled={loading || filteredEvents.length === 0}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white py-6 rounded-lg shadow-sm"
+                  size="lg"
                 >
-                  {eventsLoading ? (
+                  {loading ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      Searching...
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Creating Playlist...
                     </>
                   ) : (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-1" />
-                      Refresh Events
+                      <Music className="h-5 w-5 mr-2" />
+                      Generate Playlist ({filteredEvents.length} events)
                     </>
                   )}
                 </Button>
-
-                <Button
-                  onClick={() => setShowFilters(!showFilters)}
-                  variant={showFilters ? "default" : "outline"}
-                  size="sm"
-                  className="flex items-center gap-1"
-                >
-                  <Filter className="h-4 w-4" />
-                  Filters
-                  {hasActiveFilters && (
-                    <Badge variant="secondary" className="ml-1 text-xs px-1">
-                      {filters.venues.length +
-                        filters.genres.length +
-                        (filters.dateFrom ? 1 : 0) +
-                        (filters.dateTo ? 1 : 0) +
-                        (filters.searchText ? 1 : 0)}
-                    </Badge>
-                  )}
-                  {showFilters ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-                </Button>
-
-                <Button
-                  onClick={() => setShowSettings(!showSettings)}
-                  variant={showSettings ? "default" : "outline"}
-                  size="sm"
-                  className="flex items-center gap-1"
-                >
-                  <Settings className="h-4 w-4" />
-                  Settings
-                  {showSettings ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-                </Button>
               </div>
-            </div>
-          )}
-        </CardHeader>
+            )}
 
-        {/* Filters Panel */}
-        {showFilters && allEvents.length > 0 && (
-          <div className="px-6 pb-4">
-            <div className="bg-muted/30 rounded-lg p-4 border border-muted">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-medium text-sm">Filter Events</h4>
-                {hasActiveFilters && (
-                  <Button onClick={clearFilters} variant="outline" size="sm">
-                    <X className="h-4 w-4 mr-1" />
-                    Clear All
-                  </Button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Text Search */}
-                <div className="space-y-2">
-                  <Label htmlFor="search-text" className="text-sm font-medium">
-                    Search
-                  </Label>
-                  <Input
-                    id="search-text"
-                    value={filters.searchText}
-                    onChange={(e) => setFilters((prev) => ({ ...prev, searchText: e.target.value }))}
-                    placeholder="Artist, venue, city..."
-                    className="h-8"
-                  />
-                </div>
-
-                {/* Date Range */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Date Range</Label>
-                  <div className="space-y-1">
-                    <Input
-                      type="date"
-                      value={filters.dateFrom}
-                      onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
-                      className="h-8 text-sm"
-                    />
-                    <Input
-                      type="date"
-                      value={filters.dateTo}
-                      onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
-                      className="h-8 text-sm"
-                    />
+            {/* Events Section */}
+            <Card className="bg-white shadow-sm w-full">
+              {/* Card Header with Title */}
+              <CardHeader className="pb-0">
+                <div className="flex flex-col space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                    <CardTitle>
+                      Upcoming Shows
+                      {location && <span className="text-gray-600 ml-1">in {location.city}</span>}
+                    </CardTitle>
                   </div>
+                  <CardDescription>
+                    {location ? "Live music events happening near you" : "Set your location to search for local events"}
+                  </CardDescription>
                 </div>
+              </CardHeader>
 
-                {/* Venues */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Venues ({filters.venues.length})</Label>
-                  <div className="max-h-24 overflow-y-auto border rounded-md p-2 space-y-1 bg-background">
-                    {uniqueVenues.slice(0, 6).map((venue) => (
-                      <div key={venue} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`venue-${venue}`}
-                          checked={filters.venues.includes(venue)}
-                          onCheckedChange={() => handleVenueToggle(venue)}
-                          className="h-3 w-3"
-                        />
-                        <Label htmlFor={`venue-${venue}`} className="text-xs cursor-pointer leading-none">
-                          {venue.length > 20 ? venue.substring(0, 20) + "..." : venue}
-                        </Label>
-                      </div>
-                    ))}
-                    {uniqueVenues.length > 6 && (
-                      <p className="text-xs text-muted-foreground">+{uniqueVenues.length - 6} more</p>
-                    )}
+              {/* Toolbar - Centered under header */}
+              {location && (
+                <div className="px-6 py-4 flex justify-center">
+                  <div className="inline-flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-100">
+                    <Button
+                      onClick={() => searchEvents(false)}
+                      disabled={eventsLoading || !location || !apiStatus?.success}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {eventsLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Searching...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                          Refresh
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      onClick={() => setShowFilters(!showFilters)}
+                      variant={showFilters ? "default" : "outline"}
+                      size="sm"
+                      className={showFilters ? "bg-blue-600 text-white" : "border-gray-200"}
+                    >
+                      <Filter className="h-4 w-4 mr-1" />
+                      {showFilters ? "Hide Filters" : "Filters"}
+                      {hasActiveFilters && (
+                        <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 text-xs">
+                          {filters.venues.length +
+                            filters.genres.length +
+                            (filters.dateFrom ? 1 : 0) +
+                            (filters.dateTo ? 1 : 0) +
+                            (filters.searchText ? 1 : 0)}
+                        </Badge>
+                      )}
+                    </Button>
+
+                    <Button
+                      onClick={() => setShowSettings(!showSettings)}
+                      variant={showSettings ? "default" : "outline"}
+                      size="sm"
+                      className={showSettings ? "bg-blue-600 text-white" : "border-gray-200"}
+                    >
+                      <Settings className="h-4 w-4 mr-1" />
+                      {showSettings ? "Hide Settings" : "Settings"}
+                    </Button>
                   </div>
-                </div>
-
-                {/* Genres */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Genres ({filters.genres.length})</Label>
-                  <div className="max-h-24 overflow-y-auto border rounded-md p-2 space-y-1 bg-background">
-                    {uniqueGenres.slice(0, 6).map((genre) => (
-                      <div key={genre} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`genre-${genre}`}
-                          checked={filters.genres.includes(genre)}
-                          onCheckedChange={() => handleGenreToggle(genre)}
-                          className="h-3 w-3"
-                        />
-                        <Label htmlFor={`genre-${genre}`} className="text-xs cursor-pointer leading-none">
-                          {genre}
-                        </Label>
-                      </div>
-                    ))}
-                    {uniqueGenres.length > 6 && (
-                      <p className="text-xs text-muted-foreground">+{uniqueGenres.length - 6} more</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {hasActiveFilters && (
-                <div className="mt-3 text-sm text-muted-foreground">
-                  Showing {filteredEvents.length} of {allEvents.length} events
                 </div>
               )}
-            </div>
-          </div>
-        )}
 
-        {/* Settings Panel */}
-        {showSettings && (
-          <div className="px-6 pb-4">
-            <div className="bg-muted/30 rounded-lg p-4 border border-muted">
-              <h4 className="font-medium text-sm mb-4">Search Settings</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="radius" className="text-sm font-medium">
-                    Radius (miles)
-                  </Label>
-                  <Input
-                    id="radius"
-                    value={searchParams.radius}
-                    onChange={(e) => setSearchParams((prev) => ({ ...prev, radius: e.target.value }))}
-                    placeholder="25"
-                    className="h-8"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="days" className="text-sm font-medium">
-                    Days Ahead
-                  </Label>
-                  <Input
-                    id="days"
-                    value={searchParams.daysAhead}
-                    onChange={(e) => setSearchParams((prev) => ({ ...prev, daysAhead: e.target.value }))}
-                    placeholder="7"
-                    className="h-8"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="size" className="text-sm font-medium">
-                    Max Results
-                  </Label>
-                  <Input
-                    id="size"
-                    value={searchParams.size}
-                    onChange={(e) => setSearchParams((prev) => ({ ...prev, size: e.target.value }))}
-                    placeholder="100"
-                    className="h-8"
-                  />
-                </div>
-              </div>
-              <Button
-                onClick={() => searchEvents(false)}
-                disabled={eventsLoading}
-                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-                size="sm"
-              >
-                {eventsLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    <Search className="h-4 w-4 mr-2" />
-                    Search with New Parameters
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Card Content - Events List */}
-        <CardContent className="space-y-4">
-          {!location ? (
-            <div className="text-center py-12">
-              <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Location Required</h3>
-              <p className="text-muted-foreground mb-6">
-                Please set your location above to automatically search for upcoming shows in your area.
-              </p>
-            </div>
-          ) : !apiStatus?.success ? (
-            <div className="text-center py-12">
-              <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">API Not Available</h3>
-              <p className="text-muted-foreground mb-6">
-                Ticketmaster API is not properly configured. Please check the configuration.
-              </p>
-            </div>
-          ) : eventsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mr-3" />
-              <span className="text-muted-foreground">Searching for events in {location?.city || "your area"}...</span>
-            </div>
-          ) : filteredEvents.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">
-                {hasActiveFilters ? "No Events Match Filters" : "No Events Found"}
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                {hasActiveFilters ? (
-                  <>
-                    No events match your current filters. Try adjusting or clearing your filters.
-                    <br />
-                    Found {allEvents.length} total events before filtering.
-                  </>
-                ) : (
-                  <>
-                    No upcoming shows found in {location?.city} for the next {searchParams.daysAhead} days.
-                    <br />
-                    Try adjusting the search radius or time range in settings.
-                  </>
-                )}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {/* Events List */}
-              {currentEvents.map((event, index) => (
-                <div key={`${event.id}-${index}`} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                  <div className="flex flex-col md:flex-row md:items-center gap-4">
-                    <div className="flex-shrink-0">
-                      {event.imageUrl ? (
-                        <img
-                          src={event.imageUrl || "/placeholder.svg"}
-                          alt={event.artistName}
-                          className="w-16 h-16 rounded-lg object-cover"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                          {event.artistName.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-grow min-w-0">
-                      <h4 className="font-semibold text-lg">{event.artistName}</h4>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                        <MapPin className="h-3 w-3 flex-shrink-0" />
-                        <span className="truncate">{event.venueName}</span>
-                        {event.city && event.state && (
-                          <span>
-                            • {event.city}, {event.state}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                        <Calendar className="h-3 w-3 flex-shrink-0" />
-                        <span>{new Date(event.date).toLocaleDateString()}</span>
-                        {event.time && <span>at {event.time}</span>}
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {event.genre && (
-                          <Badge variant="outline" className="text-xs">
-                            {event.genre}
-                          </Badge>
-                        )}
-                        {event.price && (
-                          <Badge variant="secondary" className="text-xs">
-                            {event.price}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-shrink-0">
-                      {event.ticketUrl && (
-                        <Button
-                          onClick={() => window.open(event.ticketUrl, "_blank")}
-                          size="sm"
-                          className="w-full md:w-auto"
-                        >
-                          <Ticket className="h-4 w-4 mr-2" />
-                          Buy Tickets
+              {/* Filters Panel */}
+              {showFilters && allEvents.length > 0 && (
+                <div className="px-6 pt-0 pb-4">
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-gray-900">Filter Events</h4>
+                      {hasActiveFilters && (
+                        <Button onClick={clearFilters} variant="outline" size="sm">
+                          <X className="h-4 w-4 mr-1" />
+                          Clear All
                         </Button>
                       )}
                     </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* Text Search */}
+                      <div>
+                        <Label htmlFor="search-text" className="text-sm font-medium">
+                          Search
+                        </Label>
+                        <Input
+                          id="search-text"
+                          value={filters.searchText}
+                          onChange={(e) => setFilters((prev) => ({ ...prev, searchText: e.target.value }))}
+                          placeholder="Artist, venue, city..."
+                          className="mt-1"
+                        />
+                      </div>
+
+                      {/* Date Range */}
+                      <div>
+                        <Label className="text-sm font-medium">Date Range</Label>
+                        <div className="space-y-2 mt-1">
+                          <Input
+                            type="date"
+                            value={filters.dateFrom}
+                            onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
+                            className="text-sm"
+                          />
+                          <Input
+                            type="date"
+                            value={filters.dateTo}
+                            onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
+                            className="text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Venues */}
+                      <div>
+                        <Label className="text-sm font-medium">Venues ({filters.venues.length})</Label>
+                        <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
+                          {uniqueVenues.slice(0, 8).map((venue) => (
+                            <div key={venue} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`venue-${venue}`}
+                                checked={filters.venues.includes(venue)}
+                                onCheckedChange={() => handleVenueToggle(venue)}
+                              />
+                              <Label htmlFor={`venue-${venue}`} className="text-xs cursor-pointer">
+                                {venue.length > 25 ? venue.substring(0, 25) + "..." : venue}
+                              </Label>
+                            </div>
+                          ))}
+                          {uniqueVenues.length > 8 && (
+                            <p className="text-xs text-gray-500">+{uniqueVenues.length - 8} more venues</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Genres */}
+                      <div>
+                        <Label className="text-sm font-medium">Genres ({filters.genres.length})</Label>
+                        <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
+                          {uniqueGenres.slice(0, 8).map((genre) => (
+                            <div key={genre} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`genre-${genre}`}
+                                checked={filters.genres.includes(genre)}
+                                onCheckedChange={() => handleGenreToggle(genre)}
+                              />
+                              <Label htmlFor={`genre-${genre}`} className="text-xs cursor-pointer">
+                                {genre}
+                              </Label>
+                            </div>
+                          ))}
+                          {uniqueGenres.length > 8 && (
+                            <p className="text-xs text-gray-500">+{uniqueGenres.length - 8} more genres</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {hasActiveFilters && (
+                      <div className="mt-3 text-sm text-gray-600">
+                        Showing {filteredEvents.length} of {allEvents.length} events
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
+              )}
 
-        {/* Pagination */}
-        {filteredEvents.length > 0 && totalPages > 1 && (
-          <CardFooter className="border-t">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
-              <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredEvents.length)} of {filteredEvents.length} events
-                {hasActiveFilters && ` (filtered from ${allEvents.length} total)`}
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <Button variant="outline" size="sm" onClick={goToPreviousPage} disabled={currentPage === 1}>
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
-                </Button>
-
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-                    let pageNum
-                    if (totalPages <= 3) {
-                      pageNum = i + 1
-                    } else if (currentPage <= 2) {
-                      pageNum = i + 1
-                    } else if (currentPage >= totalPages - 1) {
-                      pageNum = totalPages - 2 + i
-                    } else {
-                      pageNum = currentPage - 1 + i
-                    }
-
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={currentPage === pageNum ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => goToPage(pageNum)}
-                      >
-                        {pageNum}
-                      </Button>
-                    )
-                  })}
+              {/* Settings Panel */}
+              {showSettings && (
+                <div className="px-6 pt-0 pb-4">
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <h4 className="font-medium text-gray-900 mb-3">Search Settings</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="radius" className="text-sm font-medium">
+                          Radius (miles)
+                        </Label>
+                        <Input
+                          id="radius"
+                          value={searchParams.radius}
+                          onChange={(e) => setSearchParams((prev) => ({ ...prev, radius: e.target.value }))}
+                          placeholder="25"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="days" className="text-sm font-medium">
+                          Days Ahead
+                        </Label>
+                        <Input
+                          id="days"
+                          value={searchParams.daysAhead}
+                          onChange={(e) => setSearchParams((prev) => ({ ...prev, daysAhead: e.target.value }))}
+                          placeholder="7"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="size" className="text-sm font-medium">
+                          Max Results
+                        </Label>
+                        <Input
+                          id="size"
+                          value={searchParams.size}
+                          onChange={(e) => setSearchParams((prev) => ({ ...prev, size: e.target.value }))}
+                          placeholder="100"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => searchEvents(false)}
+                      disabled={eventsLoading}
+                      className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {eventsLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Searching...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          Search with New Parameters
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
+              )}
 
-                <Button variant="outline" size="sm" onClick={goToNextPage} disabled={currentPage === totalPages}>
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-            </div>
-          </CardFooter>
-        )}
-      </Card>
+              {/* Card Content - Events List */}
+              <CardContent className="p-6 pt-2">
+                {!location ? (
+                  <div className="text-center py-12">
+                    <MapPin className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">Location Required</h3>
+                    <p className="text-gray-600 mb-6">
+                      Please set your location below to automatically search for upcoming shows in your area.
+                    </p>
+                  </div>
+                ) : !apiStatus?.success ? (
+                  <div className="text-center py-12">
+                    <XCircle className="h-16 w-16 text-red-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">API Not Available</h3>
+                    <p className="text-gray-600 mb-6">
+                      Ticketmaster API is not properly configured. Please check the configuration.
+                    </p>
+                  </div>
+                ) : eventsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-3" />
+                    <span className="text-gray-600">Searching for events in {location?.city || "your area"}...</span>
+                  </div>
+                ) : filteredEvents.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">
+                      {hasActiveFilters ? "No Events Match Filters" : "No Events Found"}
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      {hasActiveFilters ? (
+                        <>
+                          No events match your current filters. Try adjusting or clearing your filters.
+                          <br />
+                          Found {allEvents.length} total events before filtering.
+                        </>
+                      ) : (
+                        <>
+                          No upcoming shows found in {location?.city} for the next {searchParams.daysAhead} days.
+                          <br />
+                          Try adjusting the search radius or time range in settings.
+                        </>
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Events List */}
+                    {currentEvents.map((event, index) => (
+                      <div
+                        key={`${event.id}-${index}`}
+                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-all"
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                          <div className="flex-shrink-0">
+                            {event.imageUrl ? (
+                              <img
+                                src={event.imageUrl || "/placeholder.svg"}
+                                alt={event.artistName}
+                                className="w-16 h-16 rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                                {event.artistName.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-grow min-w-0">
+                            <h4 className="font-semibold text-lg text-gray-900">{event.artistName}</h4>
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                              <MapPin className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{event.venueName}</span>
+                              {event.city && event.state && (
+                                <span className="text-gray-500">
+                                  • {event.city}, {event.state}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                              <Calendar className="h-3 w-3 flex-shrink-0" />
+                              <span>{new Date(event.date).toLocaleDateString()}</span>
+                              {event.time && <span className="text-gray-500">at {event.time}</span>}
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {event.genre && (
+                                <Badge variant="outline" className="text-xs">
+                                  {event.genre}
+                                </Badge>
+                              )}
+                              {event.price && (
+                                <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                                  {event.price}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0">
+                            {event.ticketUrl && (
+                              <Button
+                                onClick={() => window.open(event.ticketUrl, "_blank")}
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700 text-white w-full md:w-auto"
+                              >
+                                <Ticket className="h-4 w-4 mr-2" />
+                                Buy Tickets
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+
+              {/* Pagination in Card Footer */}
+              {filteredEvents.length > 0 && totalPages > 1 && (
+                <CardFooter className="border-t border-gray-100 p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
+                    <div className="text-sm text-gray-600">
+                      Showing {startIndex + 1}-{Math.min(endIndex, filteredEvents.length)} of {filteredEvents.length}{" "}
+                      events
+                      {hasActiveFilters && ` (filtered from ${allEvents.length} total)`}
+                    </div>
+                    <div className="flex items-center gap-2 justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1}
+                        className="border-gray-200"
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+                          let pageNum
+                          if (totalPages <= 3) {
+                            pageNum = i + 1
+                          } else if (currentPage <= 2) {
+                            pageNum = i + 1
+                          } else if (currentPage >= totalPages - 1) {
+                            pageNum = totalPages - 2 + i
+                          } else {
+                            pageNum = currentPage - 1 + i
+                          }
+
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => goToPage(pageNum)}
+                              className={currentPage === pageNum ? "bg-blue-600 text-white" : "border-gray-200"}
+                            >
+                              {pageNum}
+                            </Button>
+                          )
+                        })}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={goToNextPage}
+                        disabled={currentPage === totalPages}
+                        className="border-gray-200"
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardFooter>
+              )}
+            </Card>
+          </div>
+
+          {/* Sidebar Column */}
+          <div className="w-full md:w-1/3 space-y-6">
+            {/* Location Settings */}
+            <LocationSettings onLocationUpdate={handleLocationUpdate} currentLocation={location} />
+
+            {/* Quick Actions Card */}
+            {location && (
+              <Card className="bg-white shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button
+                    onClick={() => searchEvents(false)}
+                    disabled={eventsLoading || !location || !apiStatus?.success}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    size="sm"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh Events
+                  </Button>
+                  <Button onClick={() => setShowFilters(!showFilters)} variant="outline" className="w-full" size="sm">
+                    <Filter className="h-4 w-4 mr-2" />
+                    {showFilters ? "Hide" : "Show"} Filters
+                  </Button>
+                  <Button onClick={() => setShowSettings(!showSettings)} variant="outline" className="w-full" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    {showSettings ? "Hide" : "Show"} Settings
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

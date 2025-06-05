@@ -79,7 +79,7 @@ export default function HomePage() {
               asChild
               className="w-full bg-green-500 hover:bg-green-600 text-white py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
             >
-              <Link href="/api/auth/spotify?returnTo=%2Fdashboard">
+              <Link href="/spotify-auth">
                 <Play className="h-5 w-5 mr-3" />
                 Continue with Spotify
               </Link>
