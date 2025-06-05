@@ -47,8 +47,7 @@ interface LocationData {
 }
 
 export default function DashboardScreen() {
-  console.log("DASHBOARD SCREEN COMPONENT TEST: " + new Date().toISOString())
-  console.log("SRC/SCREENS/DASHBOARDSCREEN.TSX FOUND - " + new Date().toISOString())
+  console.log("🔥 REACT NATIVE DASHBOARD SCREEN - NO STATS CARDS VERSION: " + new Date().toISOString())
 
   const [location, setLocation] = useState<LocationData | null>(null)
   const [events, setEvents] = useState<Event[]>([])
@@ -239,22 +238,19 @@ export default function DashboardScreen() {
           </Card>
         )}
 
-        {/* Stats Cards */}
-        {events.length > 0 && (
-          <View style={styles.statsContainer}>
-            <Card style={styles.statCard}>
-              <Card.Content style={styles.statContent}>
-                <Title style={styles.statNumber}>{events.length}</Title>
-                <Paragraph>Total Events</Paragraph>
-              </Card.Content>
-            </Card>
-            <Card style={styles.statCard}>
-              <Card.Content style={styles.statContent}>
-                <Title style={styles.statNumber}>{filteredEvents.length}</Title>
-                <Paragraph>Filtered</Paragraph>
-              </Card.Content>
-            </Card>
-          </View>
+        {/* REMOVED STATS CARDS SECTION - NO MORE OVERLAP! */}
+
+        {/* Generate Playlist Button */}
+        {filteredEvents.length > 0 && (
+          <Card style={styles.card}>
+            <Card.Content style={styles.playlistButtonContainer}>
+              <Title>🎵 Create Your Playlist</Title>
+              <Paragraph>Generate a playlist from {filteredEvents.length} upcoming events</Paragraph>
+              <Button mode="contained" onPress={generatePlaylist} disabled={loading} style={styles.playlistButton}>
+                Generate Playlist
+              </Button>
+            </Card.Content>
+          </Card>
         )}
 
         {/* Search Bar */}
@@ -334,17 +330,6 @@ export default function DashboardScreen() {
         )}
       </ScrollView>
 
-      {/* Generate Playlist FAB */}
-      {filteredEvents.length > 0 && (
-        <FAB
-          style={styles.fab}
-          icon="playlist-plus"
-          label="Generate Playlist"
-          onPress={generatePlaylist}
-          disabled={loading}
-        />
-      )}
-
       {/* Filter Modal */}
       <Portal>
         <Modal visible={showFilters} onDismiss={() => setShowFilters(false)} contentContainerStyle={styles.modal}>
@@ -413,23 +398,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     elevation: 2,
   },
-  statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  statCard: {
-    flex: 1,
-    marginHorizontal: 4,
-    elevation: 2,
-  },
-  statContent: {
+  playlistButtonContainer: {
     alignItems: "center",
+    padding: 16,
   },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#10B981",
+  playlistButton: {
+    marginTop: 12,
+    backgroundColor: "#10B981",
   },
   searchBar: {
     marginBottom: 16,
@@ -469,18 +444,11 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 16,
   },
-  fab: {
-    position: "absolute",
-    margin: 16,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "#10B981",
-  },
   filterFab: {
     position: "absolute",
     margin: 16,
     right: 0,
-    bottom: 80,
+    bottom: 16,
     backgroundColor: "#059669",
   },
   modal: {
