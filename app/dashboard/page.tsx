@@ -538,36 +538,6 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row gap-6">
           {/* Main Content Column */}
           <div className="w-full md:w-2/3 space-y-6">
-            {/* Stats Row - Only show when location is set */}
-            {location && allEvents.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <Card className="bg-white shadow-sm">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-gray-900">{allEvents.length}</div>
-                    <div className="text-sm text-gray-600">Total Events</div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-white shadow-sm">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-gray-900">{filteredEvents.length}</div>
-                    <div className="text-sm text-gray-600">Filtered Events</div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-white shadow-sm">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-gray-900">{uniqueVenues.length}</div>
-                    <div className="text-sm text-gray-600">Local Venues</div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-white shadow-sm">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-gray-900">{uniqueGenres.length}</div>
-                    <div className="text-sm text-gray-600">Music Genres</div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
             {/* Generate Playlist Button - Only show when location is set */}
             {location && (
               <div className="w-full">
