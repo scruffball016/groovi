@@ -16,26 +16,12 @@ export default function DashboardLayout({
 
   return (
     <AuthGuard>
-      <div className="flex min-h-screen bg-slate-50">
-        {/* Sidebar - Fixed position on desktop, sliding on mobile */}
-        <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-          <div className="h-full">
-            <Sidebar isOpen={true} onClose={() => {}} />
-          </div>
-        </div>
-
-        {/* Mobile sidebar - Overlay */}
-        {sidebarOpen && (
-          <div className="lg:hidden">
-            <div className="fixed inset-0 z-40 bg-black bg-opacity-50" onClick={() => setSidebarOpen(false)} />
-            <div className="fixed inset-y-0 left-0 z-50 w-64">
-              <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-            </div>
-          </div>
-        )}
+      <div className="flex h-screen bg-slate-50">
+        {/* Sidebar */}
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         {/* Main content area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden lg:ml-64">
           {/* Mobile header */}
           <div className="lg:hidden flex items-center justify-between h-16 px-4 bg-white border-b border-slate-200 shadow-sm">
             <SidebarTrigger onClick={() => setSidebarOpen(true)} />
@@ -49,7 +35,9 @@ export default function DashboardLayout({
           </div>
 
           {/* Main content */}
-          <main className="flex-1 overflow-y-auto bg-slate-50">{children}</main>
+          <main className="flex-1 overflow-y-auto bg-slate-50">
+            <div className="p-6">{children}</div>
+          </main>
         </div>
       </div>
     </AuthGuard>

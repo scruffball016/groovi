@@ -1,3 +1,0 @@
-Deployment test file created at: 2025-01-06T15:33:36.000Z
-This file should trigger a new deployment.
-If you see this timestamp in your deployed app, deployments are working.
