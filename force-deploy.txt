@@ -1,2 +1,1 @@
-Force deployment timestamp: ${new Date().toISOString()}
-This file ensures Vercel recognizes this as a new deployment.
+Forcing a new deployment with timestamp: 2025-06-05T15:55:46.000Z

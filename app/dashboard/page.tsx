@@ -38,6 +38,9 @@ interface LocationData {
 }
 
 export default function DashboardPage() {
+  // Add a console log to verify this version is being used
+  console.log("DASHBOARD VERSION: NO STATS CARDS - " + new Date().toISOString())
+
   const { toast } = useToast()
   const [location, setLocation] = useState<LocationData | null>(null)
   const [allEvents, setAllEvents] = useState<any[]>([])
