@@ -27,6 +27,8 @@ import {
   X,
   CheckCircle,
   BarChart3,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 
 interface LocationData {
@@ -550,80 +552,99 @@ export default function DashboardPage() {
         </Button>
       )}
 
-      {/* Events Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col space-y-4">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Upcoming Shows
-                {location && <span className="text-muted-foreground ml-1">in {location.city}</span>}
-              </CardTitle>
-              <CardDescription>
-                {location ? "Live music events happening near you" : "Set your location to search for local events"}
-              </CardDescription>
-            </div>
-
-            {/* Controls */}
-            {location && (
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => searchEvents(false)}
-                  disabled={eventsLoading || !location || !apiStatus?.success}
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {eventsLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      Searching...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-1" />
-                      Refresh
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={() => setShowFilters(!showFilters)}
-                  variant={showFilters ? "default" : "outline"}
-                  size="sm"
-                >
-                  <Filter className="h-4 w-4 mr-1" />
-                  {showFilters ? "Hide Filters" : "Filters"}
-                  {hasActiveFilters && (
-                    <Badge variant="secondary" className="ml-1 text-xs">
-                      {filters.venues.length +
-                        filters.genres.length +
-                        (filters.dateFrom ? 1 : 0) +
-                        (filters.dateTo ? 1 : 0) +
-                        (filters.searchText ? 1 : 0)}
-                    </Badge>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={() => setShowSettings(!showSettings)}
-                  variant={showSettings ? "default" : "outline"}
-                  size="sm"
-                >
-                  <Settings className="h-4 w-4 mr-1" />
-                  {showSettings ? "Hide Settings" : "Settings"}
-                </Button>
-              </div>
-            )}
+      {/* Main Events Card - Everything contained within */}
+      <Card className="w-full">
+        {/* Card Header */}
+        <CardHeader className="space-y-4">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Upcoming Shows
+              {location && <span className="text-muted-foreground ml-1">in {location.city}</span>}
+            </CardTitle>
+            <CardDescription>
+              {location ? "Live music events happening near you" : "Set your location to search for local events"}
+            </CardDescription>
           </div>
+
+          {/* Action Bar - Contained within header */}
+          {location && (
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+              <Button
+                onClick={() => searchEvents(false)}
+                disabled={eventsLoading || !location || !apiStatus?.success}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {eventsLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    Searching...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                    Refresh Events
+                  </>
+                )}
+              </Button>
+
+              <Button
+                onClick={() => setShowFilters(!showFilters)}
+                variant={showFilters ? "default" : "outline"}
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <Filter className="h-4 w-4" />
+                Filters
+                {hasActiveFilters && (
+                  <Badge variant="secondary" className="ml-1 text-xs px-1">
+                    {filters.venues.length +
+                      filters.genres.length +
+                      (filters.dateFrom ? 1 : 0) +
+                      (filters.dateTo ? 1 : 0) +
+                      (filters.searchText ? 1 : 0)}
+                  </Badge>
+                )}
+                {showFilters ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+              </Button>
+
+              <Button
+                onClick={() => setShowSettings(!showSettings)}
+                variant={showSettings ? "default" : "outline"}
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+                {showSettings ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+              </Button>
+
+              {/* Stats Display */}
+              {allEvents.length > 0 && (
+                <div className="flex items-center gap-4 ml-auto text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>
+                      {filteredEvents.length}/{allEvents.length} events
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    <span>{uniqueVenues.length} venues</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </CardHeader>
 
-        {/* Filters Panel */}
+        {/* Filters Panel - Contained within card */}
         {showFilters && allEvents.length > 0 && (
           <div className="px-6 pb-4">
-            <div className="bg-muted/50 rounded-lg p-4 border">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-medium">Filter Events</h4>
+            <div className="bg-muted/30 rounded-lg p-4 border border-muted">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium text-sm">Filter Events</h4>
                 {hasActiveFilters && (
                   <Button onClick={clearFilters} variant="outline" size="sm">
                     <X className="h-4 w-4 mr-1" />
@@ -631,9 +652,10 @@ export default function DashboardPage() {
                   </Button>
                 )}
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Text Search */}
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="search-text" className="text-sm font-medium">
                     Search
                   </Label>
@@ -642,69 +664,71 @@ export default function DashboardPage() {
                     value={filters.searchText}
                     onChange={(e) => setFilters((prev) => ({ ...prev, searchText: e.target.value }))}
                     placeholder="Artist, venue, city..."
-                    className="mt-1"
+                    className="h-8"
                   />
                 </div>
 
                 {/* Date Range */}
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium">Date Range</Label>
-                  <div className="space-y-2 mt-1">
+                  <div className="space-y-1">
                     <Input
                       type="date"
                       value={filters.dateFrom}
                       onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
-                      className="text-sm"
+                      className="h-8 text-sm"
                     />
                     <Input
                       type="date"
                       value={filters.dateTo}
                       onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
-                      className="text-sm"
+                      className="h-8 text-sm"
                     />
                   </div>
                 </div>
 
                 {/* Venues */}
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium">Venues ({filters.venues.length})</Label>
-                  <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-background">
-                    {uniqueVenues.slice(0, 8).map((venue) => (
+                  <div className="max-h-24 overflow-y-auto border rounded-md p-2 space-y-1 bg-background">
+                    {uniqueVenues.slice(0, 6).map((venue) => (
                       <div key={venue} className="flex items-center space-x-2">
                         <Checkbox
                           id={`venue-${venue}`}
                           checked={filters.venues.includes(venue)}
                           onCheckedChange={() => handleVenueToggle(venue)}
+                          className="h-3 w-3"
                         />
-                        <Label htmlFor={`venue-${venue}`} className="text-xs cursor-pointer">
-                          {venue.length > 25 ? venue.substring(0, 25) + "..." : venue}
+                        <Label htmlFor={`venue-${venue}`} className="text-xs cursor-pointer leading-none">
+                          {venue.length > 20 ? venue.substring(0, 20) + "..." : venue}
                         </Label>
                       </div>
                     ))}
-                    {uniqueVenues.length > 8 && (
-                      <p className="text-xs text-muted-foreground">+{uniqueVenues.length - 8} more venues</p>
+                    {uniqueVenues.length > 6 && (
+                      <p className="text-xs text-muted-foreground">+{uniqueVenues.length - 6} more</p>
                     )}
                   </div>
                 </div>
 
                 {/* Genres */}
-                <div>
+                <div className="space-y-2">
                   <Label className="text-sm font-medium">Genres ({filters.genres.length})</Label>
-                  <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-background">
-                    {uniqueGenres.slice(0, 8).map((genre) => (
+                  <div className="max-h-24 overflow-y-auto border rounded-md p-2 space-y-1 bg-background">
+                    {uniqueGenres.slice(0, 6).map((genre) => (
                       <div key={genre} className="flex items-center space-x-2">
                         <Checkbox
                           id={`genre-${genre}`}
                           checked={filters.genres.includes(genre)}
                           onCheckedChange={() => handleGenreToggle(genre)}
+                          className="h-3 w-3"
                         />
-                        <Label htmlFor={`genre-${genre}`} className="text-xs cursor-pointer">
+                        <Label htmlFor={`genre-${genre}`} className="text-xs cursor-pointer leading-none">
                           {genre}
                         </Label>
                       </div>
                     ))}
-                    {uniqueGenres.length > 8 && (
-                      <p className="text-xs text-muted-foreground">+{uniqueGenres.length - 8} more genres</p>
+                    {uniqueGenres.length > 6 && (
+                      <p className="text-xs text-muted-foreground">+{uniqueGenres.length - 6} more</p>
                     )}
                   </div>
                 </div>
@@ -719,13 +743,13 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Settings Panel */}
+        {/* Settings Panel - Contained within card */}
         {showSettings && (
           <div className="px-6 pb-4">
-            <div className="bg-muted/50 rounded-lg p-4 border">
-              <h4 className="font-medium mb-3">Search Settings</h4>
+            <div className="bg-muted/30 rounded-lg p-4 border border-muted">
+              <h4 className="font-medium text-sm mb-4">Search Settings</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="radius" className="text-sm font-medium">
                     Radius (miles)
                   </Label>
@@ -734,10 +758,10 @@ export default function DashboardPage() {
                     value={searchParams.radius}
                     onChange={(e) => setSearchParams((prev) => ({ ...prev, radius: e.target.value }))}
                     placeholder="25"
-                    className="mt-1"
+                    className="h-8"
                   />
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="days" className="text-sm font-medium">
                     Days Ahead
                   </Label>
@@ -746,10 +770,10 @@ export default function DashboardPage() {
                     value={searchParams.daysAhead}
                     onChange={(e) => setSearchParams((prev) => ({ ...prev, daysAhead: e.target.value }))}
                     placeholder="7"
-                    className="mt-1"
+                    className="h-8"
                   />
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="size" className="text-sm font-medium">
                     Max Results
                   </Label>
@@ -758,7 +782,7 @@ export default function DashboardPage() {
                     value={searchParams.size}
                     onChange={(e) => setSearchParams((prev) => ({ ...prev, size: e.target.value }))}
                     placeholder="100"
-                    className="mt-1"
+                    className="h-8"
                   />
                 </div>
               </div>
@@ -766,6 +790,7 @@ export default function DashboardPage() {
                 onClick={() => searchEvents(false)}
                 disabled={eventsLoading}
                 className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+                size="sm"
               >
                 {eventsLoading ? (
                   <>
@@ -783,7 +808,8 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <CardContent>
+        {/* Card Content - Events List */}
+        <CardContent className="space-y-4">
           {!location ? (
             <div className="text-center py-12">
               <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -828,7 +854,7 @@ export default function DashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Events List */}
               {currentEvents.map((event, index) => (
                 <div key={`${event.id}-${index}`} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
@@ -894,7 +920,7 @@ export default function DashboardPage() {
           )}
         </CardContent>
 
-        {/* Pagination */}
+        {/* Pagination - Contained within card footer */}
         {filteredEvents.length > 0 && totalPages > 1 && (
           <CardFooter className="border-t">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
@@ -943,38 +969,6 @@ export default function DashboardPage() {
           </CardFooter>
         )}
       </Card>
-
-      {/* Stats Card */}
-      {location && allEvents.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center">
-              <BarChart3 className="h-5 w-5 mr-2" />
-              Event Statistics
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold">{allEvents.length}</div>
-                <div className="text-sm text-muted-foreground">Total Events</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{filteredEvents.length}</div>
-                <div className="text-sm text-muted-foreground">Filtered Events</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{uniqueVenues.length}</div>
-                <div className="text-sm text-muted-foreground">Venues</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{uniqueGenres.length}</div>
-                <div className="text-sm text-muted-foreground">Genres</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
