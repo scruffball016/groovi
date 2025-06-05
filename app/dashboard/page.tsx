@@ -469,7 +469,7 @@ export default function DashboardPage() {
   return (
     <div className="w-full min-h-screen bg-gray-100">
       {/* Container with max width and centered */}
-      <div className="max-w-5xl mx-auto p-4 space-y-6">
+      <div className="max-w-7xl mx-auto p-4 space-y-6">
         {/* Header Section - Always at top */}
         <div className="w-full">
           <Card className="bg-white shadow-sm">
@@ -572,284 +572,287 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Stats Section - Only show when location is set */}
+        {/* Control Section - Properly separated layout */}
         {location && (
           <div className="w-full">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="bg-white shadow-sm">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-gray-900">{allEvents.length}</div>
-                  <div className="text-sm text-gray-600">Total Events</div>
-                </CardContent>
-              </Card>
-              <Card className="bg-white shadow-sm">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-gray-900">{filteredEvents.length}</div>
-                  <div className="text-sm text-gray-600">Filtered Events</div>
-                </CardContent>
-              </Card>
-              <Card className="bg-white shadow-sm">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-gray-900">{uniqueVenues.length}</div>
-                  <div className="text-sm text-gray-600">Venues</div>
-                </CardContent>
-              </Card>
-              <Card className="bg-white shadow-sm">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-gray-900">{uniqueGenres.length}</div>
-                  <div className="text-sm text-gray-600">Genres</div>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column - Action Buttons */}
+              <div className="lg:col-span-1">
+                <Card className="bg-white shadow-sm h-full">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Actions</CardTitle>
+                    <CardDescription>Control your event search and filtering</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button
+                      onClick={() => searchEvents(false)}
+                      disabled={eventsLoading || !location || !apiStatus?.success}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {eventsLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Searching...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Refresh Events
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      onClick={() => setShowFilters(!showFilters)}
+                      variant="outline"
+                      className="w-full border-gray-200"
+                    >
+                      <Filter className="h-4 w-4 mr-2" />
+                      {showFilters ? "Hide Filters" : "Show Filters"}
+                      {hasActiveFilters && (
+                        <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-700 text-xs">
+                          {filters.venues.length +
+                            filters.genres.length +
+                            (filters.dateFrom ? 1 : 0) +
+                            (filters.dateTo ? 1 : 0) +
+                            (filters.searchText ? 1 : 0)}
+                        </Badge>
+                      )}
+                    </Button>
+
+                    <Button
+                      onClick={() => setShowSettings(!showSettings)}
+                      variant="outline"
+                      className="w-full border-gray-200"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      {showSettings ? "Hide Settings" : "Show Settings"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Right Column - Stats Cards */}
+              <div className="lg:col-span-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-full">
+                  <Card className="bg-white shadow-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-gray-900">{allEvents.length}</div>
+                      <div className="text-sm text-gray-600">Total Events</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white shadow-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-gray-900">{filteredEvents.length}</div>
+                      <div className="text-sm text-gray-600">Filtered Events</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white shadow-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-gray-900">{uniqueVenues.length}</div>
+                      <div className="text-sm text-gray-600">Local Venues</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white shadow-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-gray-900">{uniqueGenres.length}</div>
+                      <div className="text-sm text-gray-600">Genres</div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             </div>
+          </div>
+        )}
+
+        {/* Filters Panel - Full width when shown */}
+        {showFilters && allEvents.length > 0 && (
+          <div className="w-full">
+            <Card className="bg-white shadow-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Filter Events</CardTitle>
+                  {hasActiveFilters && (
+                    <Button onClick={clearFilters} variant="outline" size="sm">
+                      <X className="h-4 w-4 mr-1" />
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Text Search */}
+                  <div>
+                    <Label htmlFor="search-text" className="text-sm font-medium">
+                      Search
+                    </Label>
+                    <Input
+                      id="search-text"
+                      value={filters.searchText}
+                      onChange={(e) => setFilters((prev) => ({ ...prev, searchText: e.target.value }))}
+                      placeholder="Artist, venue, city..."
+                      className="mt-1"
+                    />
+                  </div>
+
+                  {/* Date Range */}
+                  <div>
+                    <Label className="text-sm font-medium">Date Range</Label>
+                    <div className="space-y-2 mt-1">
+                      <Input
+                        type="date"
+                        value={filters.dateFrom}
+                        onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
+                        className="text-sm"
+                      />
+                      <Input
+                        type="date"
+                        value={filters.dateTo}
+                        onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Venues */}
+                  <div>
+                    <Label className="text-sm font-medium">Venues ({filters.venues.length})</Label>
+                    <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
+                      {uniqueVenues.slice(0, 8).map((venue) => (
+                        <div key={venue} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`venue-${venue}`}
+                            checked={filters.venues.includes(venue)}
+                            onCheckedChange={() => handleVenueToggle(venue)}
+                          />
+                          <Label htmlFor={`venue-${venue}`} className="text-xs cursor-pointer">
+                            {venue.length > 25 ? venue.substring(0, 25) + "..." : venue}
+                          </Label>
+                        </div>
+                      ))}
+                      {uniqueVenues.length > 8 && (
+                        <p className="text-xs text-gray-500">+{uniqueVenues.length - 8} more venues</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Genres */}
+                  <div>
+                    <Label className="text-sm font-medium">Genres ({filters.genres.length})</Label>
+                    <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
+                      {uniqueGenres.slice(0, 8).map((genre) => (
+                        <div key={genre} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`genre-${genre}`}
+                            checked={filters.genres.includes(genre)}
+                            onCheckedChange={() => handleGenreToggle(genre)}
+                          />
+                          <Label htmlFor={`genre-${genre}`} className="text-xs cursor-pointer">
+                            {genre}
+                          </Label>
+                        </div>
+                      ))}
+                      {uniqueGenres.length > 8 && (
+                        <p className="text-xs text-gray-500">+{uniqueGenres.length - 8} more genres</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {hasActiveFilters && (
+                  <div className="text-sm text-gray-600 pt-2 border-t">
+                    Showing {filteredEvents.length} of {allEvents.length} events
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Settings Panel - Full width when shown */}
+        {showSettings && (
+          <div className="w-full">
+            <Card className="bg-white shadow-sm">
+              <CardHeader>
+                <CardTitle>Search Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="radius" className="text-sm font-medium">
+                      Radius (miles)
+                    </Label>
+                    <Input
+                      id="radius"
+                      value={searchParams.radius}
+                      onChange={(e) => setSearchParams((prev) => ({ ...prev, radius: e.target.value }))}
+                      placeholder="25"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="days" className="text-sm font-medium">
+                      Days Ahead
+                    </Label>
+                    <Input
+                      id="days"
+                      value={searchParams.daysAhead}
+                      onChange={(e) => setSearchParams((prev) => ({ ...prev, daysAhead: e.target.value }))}
+                      placeholder="7"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="size" className="text-sm font-medium">
+                      Max Results
+                    </Label>
+                    <Input
+                      id="size"
+                      value={searchParams.size}
+                      onChange={(e) => setSearchParams((prev) => ({ ...prev, size: e.target.value }))}
+                      placeholder="100"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <Button
+                  onClick={() => searchEvents(false)}
+                  disabled={eventsLoading}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {eventsLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4 mr-2" />
+                      Search with New Parameters
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         )}
 
         {/* Events Section - Main content area */}
         <div className="w-full">
           <Card className="bg-white shadow-sm">
-            {/* Card Header - Title and Location */}
-            <CardHeader className="pb-0 pt-6 px-6">
-              <div className="flex flex-col space-y-1">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  <CardTitle>
-                    Upcoming Shows
-                    {location && <span className="text-gray-600 ml-1">in {location.city}</span>}
-                  </CardTitle>
-                </div>
-                <CardDescription>
-                  {location ? "Live music events happening near you" : "Set your location to search for local events"}
-                </CardDescription>
-              </div>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-blue-600" />
+                Upcoming Shows
+                {location && <span className="text-gray-600">in {location.city}</span>}
+              </CardTitle>
+              <CardDescription>
+                {location ? "Live music events happening near you" : "Set your location to search for local events"}
+              </CardDescription>
             </CardHeader>
 
-            {/* Control Buttons - Completely redesigned */}
-            {location && (
-              <div className="px-6 pt-4 pb-2">
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={() => searchEvents(false)}
-                    disabled={eventsLoading || !location || !apiStatus?.success}
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {eventsLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                        Searching...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="h-4 w-4 mr-1" />
-                        Refresh
-                      </>
-                    )}
-                  </Button>
-
-                  <Button
-                    onClick={() => setShowFilters(!showFilters)}
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-200"
-                  >
-                    <Filter className="h-4 w-4 mr-1" />
-                    {showFilters ? "Hide Filters" : "Filters"}
-                    {hasActiveFilters && (
-                      <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700 text-xs">
-                        {filters.venues.length +
-                          filters.genres.length +
-                          (filters.dateFrom ? 1 : 0) +
-                          (filters.dateTo ? 1 : 0) +
-                          (filters.searchText ? 1 : 0)}
-                      </Badge>
-                    )}
-                  </Button>
-
-                  <Button
-                    onClick={() => setShowSettings(!showSettings)}
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-200"
-                  >
-                    <Settings className="h-4 w-4 mr-1" />
-                    {showSettings ? "Hide Settings" : "Settings"}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Filters Panel - Inside card */}
-            {showFilters && allEvents.length > 0 && (
-              <div className="px-6 pt-2 pb-4">
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-gray-900">Filter Events</h4>
-                    {hasActiveFilters && (
-                      <Button onClick={clearFilters} variant="outline" size="sm">
-                        <X className="h-4 w-4 mr-1" />
-                        Clear All
-                      </Button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Text Search */}
-                    <div>
-                      <Label htmlFor="search-text" className="text-sm font-medium">
-                        Search
-                      </Label>
-                      <Input
-                        id="search-text"
-                        value={filters.searchText}
-                        onChange={(e) => setFilters((prev) => ({ ...prev, searchText: e.target.value }))}
-                        placeholder="Artist, venue, city..."
-                        className="mt-1"
-                      />
-                    </div>
-
-                    {/* Date Range */}
-                    <div>
-                      <Label className="text-sm font-medium">Date Range</Label>
-                      <div className="space-y-2 mt-1">
-                        <Input
-                          type="date"
-                          value={filters.dateFrom}
-                          onChange={(e) => setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))}
-                          className="text-sm"
-                        />
-                        <Input
-                          type="date"
-                          value={filters.dateTo}
-                          onChange={(e) => setFilters((prev) => ({ ...prev, dateTo: e.target.value }))}
-                          className="text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Venues */}
-                    <div>
-                      <Label className="text-sm font-medium">Venues ({filters.venues.length})</Label>
-                      <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
-                        {uniqueVenues.slice(0, 8).map((venue) => (
-                          <div key={venue} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`venue-${venue}`}
-                              checked={filters.venues.includes(venue)}
-                              onCheckedChange={() => handleVenueToggle(venue)}
-                            />
-                            <Label htmlFor={`venue-${venue}`} className="text-xs cursor-pointer">
-                              {venue.length > 25 ? venue.substring(0, 25) + "..." : venue}
-                            </Label>
-                          </div>
-                        ))}
-                        {uniqueVenues.length > 8 && (
-                          <p className="text-xs text-gray-500">+{uniqueVenues.length - 8} more venues</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Genres */}
-                    <div>
-                      <Label className="text-sm font-medium">Genres ({filters.genres.length})</Label>
-                      <div className="mt-1 max-h-32 overflow-y-auto border rounded-md p-2 space-y-2 bg-white">
-                        {uniqueGenres.slice(0, 8).map((genre) => (
-                          <div key={genre} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`genre-${genre}`}
-                              checked={filters.genres.includes(genre)}
-                              onCheckedChange={() => handleGenreToggle(genre)}
-                            />
-                            <Label htmlFor={`genre-${genre}`} className="text-xs cursor-pointer">
-                              {genre}
-                            </Label>
-                          </div>
-                        ))}
-                        {uniqueGenres.length > 8 && (
-                          <p className="text-xs text-gray-500">+{uniqueGenres.length - 8} more genres</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {hasActiveFilters && (
-                    <div className="mt-3 text-sm text-gray-600">
-                      Showing {filteredEvents.length} of {allEvents.length} events
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Settings Panel - Inside card */}
-            {showSettings && (
-              <div className="px-6 pt-2 pb-4">
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                  <h4 className="font-medium text-gray-900 mb-3">Search Settings</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="radius" className="text-sm font-medium">
-                        Radius (miles)
-                      </Label>
-                      <Input
-                        id="radius"
-                        value={searchParams.radius}
-                        onChange={(e) => setSearchParams((prev) => ({ ...prev, radius: e.target.value }))}
-                        placeholder="25"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="days" className="text-sm font-medium">
-                        Days Ahead
-                      </Label>
-                      <Input
-                        id="days"
-                        value={searchParams.daysAhead}
-                        onChange={(e) => setSearchParams((prev) => ({ ...prev, daysAhead: e.target.value }))}
-                        placeholder="7"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="size" className="text-sm font-medium">
-                        Max Results
-                      </Label>
-                      <Input
-                        id="size"
-                        value={searchParams.size}
-                        onChange={(e) => setSearchParams((prev) => ({ ...prev, size: e.target.value }))}
-                        placeholder="100"
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => searchEvents(false)}
-                    disabled={eventsLoading}
-                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {eventsLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Searching...
-                      </>
-                    ) : (
-                      <>
-                        <Search className="h-4 w-4 mr-2" />
-                        Search with New Parameters
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Separator */}
-            <div className="px-6">
-              <div className="border-t border-gray-100"></div>
-            </div>
-
-            {/* Card Content - Events List */}
-            <CardContent className="p-6">
+            <CardContent className="space-y-4">
               {!location ? (
                 <div className="text-center py-12">
                   <MapPin className="h-16 w-16 text-gray-300 mx-auto mb-4" />
