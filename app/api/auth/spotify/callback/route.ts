@@ -5,8 +5,9 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const code = url.searchParams.get("code")
   const error = url.searchParams.get("error")
+  const state = url.searchParams.get("state")
 
-  console.log("Callback received - Code:", !!code, "Error:", error)
+  console.log("Callback received - Code:", !!code, "Error:", error, "State:", state)
   console.log("Full callback URL:", url.toString())
 
   if (error) {
@@ -19,6 +20,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/?error=no_code", request.url))
   }
 
+  // Parse state to get return URL
+  let returnTo = "/dashboard?welcome=true"
+  if (state) {
+    try {
+      const stateData = JSON.parse(state)
+      returnTo = stateData.returnTo || returnTo
+    } catch (e) {
+      console.warn("Failed to parse state:", e)
+    }
+  }
+
   try {
     const clientId = process.env.SPOTIFY_CLIENT_ID
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET
@@ -27,8 +39,9 @@ export async function GET(request: NextRequest) {
       throw new Error("Missing Spotify credentials")
     }
 
-    // Update the redirectUri to match the one used in the auth route
-    const redirectUri = "https://groovi.vercel.app/auth/callback"
+    // Use the current host for redirect URI
+    const requestUrl = new URL(request.url)
+    const redirectUri = `${requestUrl.protocol}//${requestUrl.host}/auth/callback`
 
     console.log("Exchanging code for tokens with redirect URI:", redirectUri)
 
@@ -71,37 +84,67 @@ export async function GET(request: NextRequest) {
     const user = await userResponse.json()
     console.log("User info received:", user.id)
 
-    // Set cookies
+    // Set cookies with longer expiration for testing
     const cookieStore = await cookies()
 
+    // Set access token with 1 hour expiration (or token expiration, whichever is shorter)
+    const accessTokenExpiry = Math.min(tokens.expires_in || 3600, 3600) // Max 1 hour
     cookieStore.set("spotify_access_token", tokens.access_token, {
       httpOnly: true,
-      secure: true, // Always secure in production
-      maxAge: tokens.expires_in || 3600,
+      secure: true,
+      maxAge: accessTokenExpiry,
       path: "/",
       sameSite: "lax",
     })
 
+    // Set refresh token with longer expiration (30 days)
     if (tokens.refresh_token) {
       cookieStore.set("spotify_refresh_token", tokens.refresh_token, {
         httpOnly: true,
-        secure: true, // Always secure in production
+        secure: true,
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: "/",
         sameSite: "lax",
       })
     }
 
+    // Set user ID with longer expiration
     cookieStore.set("spotify_user_id", user.id, {
       httpOnly: true,
-      secure: true, // Always secure in production
+      secure: true,
       maxAge: 60 * 60 * 24 * 30, // 30 days
       path: "/",
       sameSite: "lax",
     })
 
-    console.log("Cookies set, redirecting to dashboard")
-    return NextResponse.redirect(new URL("/dashboard?welcome=true", request.url))
+    // Store auth timestamp for client-side checking
+    cookieStore.set("spotify_auth_time", Date.now().toString(), {
+      httpOnly: false, // Allow client-side access
+      secure: true,
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: "/",
+      sameSite: "lax",
+    })
+
+    // Store user info in localStorage-accessible cookie
+    const userInfo = {
+      id: user.id,
+      name: user.display_name,
+      email: user.email,
+      image: user.images?.[0]?.url,
+      authTime: Date.now(),
+    }
+
+    cookieStore.set("spotify_user_info", JSON.stringify(userInfo), {
+      httpOnly: false, // Allow client-side access
+      secure: true,
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: "/",
+      sameSite: "lax",
+    })
+
+    console.log("Cookies set, redirecting to:", returnTo)
+    return NextResponse.redirect(new URL(returnTo, request.url))
   } catch (error) {
     console.error("Callback error:", error)
     return NextResponse.redirect(

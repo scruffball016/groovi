@@ -1,5 +1,8 @@
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url)
+    const returnTo = url.searchParams.get("returnTo") || "/dashboard"
+
     // Get environment variables with debugging
     const clientId = process.env.SPOTIFY_CLIENT_ID
 
@@ -7,6 +10,7 @@ export async function GET() {
       hasClientId: !!clientId,
       clientIdLength: clientId?.length || 0,
       clientIdPreview: clientId ? `${clientId.substring(0, 8)}...` : "undefined",
+      returnTo,
     })
 
     // Check if environment variables are set
@@ -20,8 +24,9 @@ export async function GET() {
       return new Response("Spotify client ID not properly configured", { status: 500 })
     }
 
-    // Make sure the baseUrl is correctly set
-    const baseUrl = "https://groovi.vercel.app"
+    // Determine the correct base URL and redirect URI
+    const requestUrl = new URL(request.url)
+    const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`
     const redirectUri = `${baseUrl}/auth/callback`
 
     // Build Spotify authorization URL
@@ -29,12 +34,15 @@ export async function GET() {
       " ",
     )
 
+    // Create state with return URL for after auth
+    const state = JSON.stringify({ returnTo })
+
     const params = new URLSearchParams({
       response_type: "code",
       client_id: clientId,
       scope: scopes,
       redirect_uri: redirectUri,
-      state: "groovi",
+      state: state,
     })
 
     const spotifyAuthUrl = `https://accounts.spotify.com/authorize?${params.toString()}`
@@ -42,6 +50,8 @@ export async function GET() {
     console.log("Auth URL generated:", {
       clientIdUsed: `${clientId.substring(0, 8)}...`,
       redirectUri,
+      baseUrl,
+      returnTo,
       fullUrl: spotifyAuthUrl,
     })
 
