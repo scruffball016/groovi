@@ -27,6 +27,7 @@ import {
   X,
   CheckCircle,
 } from "lucide-react"
+import Link from "next/link"
 
 interface LocationData {
   city: string
@@ -468,6 +469,48 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full bg-gray-50">
+      {/* Navigation Header */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-2">
+              <div className="p-1 bg-green-500 rounded">
+                <Music className="h-4 w-4 text-white" />
+              </div>
+              <h1 className="text-lg font-bold text-gray-900">Groovi</h1>
+            </div>
+
+            <nav className="hidden md:flex space-x-6">
+              <Link href="/dashboard" className="text-green-600 font-medium">
+                Dashboard
+              </Link>
+              <Link href="/dashboard/current-playlist" className="text-gray-600 hover:text-gray-900">
+                Current Playlist
+              </Link>
+              <Link href="/dashboard/create-playlist" className="text-gray-600 hover:text-gray-900">
+                Create Playlist
+              </Link>
+              <Link href="/dashboard/venues" className="text-gray-600 hover:text-gray-900">
+                Venues
+              </Link>
+              <Link href="/dashboard/playlist-history" className="text-gray-600 hover:text-gray-900">
+                History
+              </Link>
+              <Link href="/dashboard/settings" className="text-gray-600 hover:text-gray-900">
+                Settings
+              </Link>
+            </nav>
+
+            <div className="md:hidden">
+              <button className="p-2 rounded-md text-gray-600 hover:text-gray-900">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       {/* Main container with fixed width and auto margins */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         {/* App Header */}
